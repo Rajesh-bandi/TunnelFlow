@@ -6,14 +6,14 @@ WORKDIR /app
 # Copy the whole repository
 COPY . .
 
-# Build protocol first
+# Build protocol
 WORKDIR /app/protocol
-RUN chmod +x mvnw || true
+RUN chmod +x mvnw
 RUN ./mvnw clean install -DskipTests
 
 # Build server
 WORKDIR /app/server
-RUN chmod +x mvnw || true
+RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 # ---------- Runtime Stage ----------
@@ -25,4 +25,4 @@ COPY --from=build /app/server/target/TunnelFlowServer-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
