@@ -21,8 +21,8 @@ public class PingMessageHandler implements MessageHandler {
 
     @Override
     public void handle(TunnelMessage message) throws Exception {
-        log.info("Received PING [{}]", message.getId());
-        TunnelMessage pongMessage = protocolService.createPongMessage(message.getId());
+        log.info("Received PING [{}]", message.getRequestId());
+        TunnelMessage pongMessage = protocolService.createPongMessage(message.getRequestId());
         tunnelSender.send(pongMessage);
     }
 }

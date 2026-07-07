@@ -21,7 +21,7 @@ public class TunnelProtocolService {
 
     public TunnelMessage createPingMessage() {
         return TunnelMessage.builder()
-                .id(UUID.randomUUID().toString())
+                .requestId(UUID.randomUUID().toString())
                 .type(MessageType.PING)
                 .payload("PING")
                 .build();
@@ -29,7 +29,7 @@ public class TunnelProtocolService {
 
     public TunnelMessage createPongMessage(String requestId) {
         return TunnelMessage.builder()
-                .id(requestId)
+                .requestId(requestId)
                 .type(MessageType.PONG)
                 .payload("PONG")
                 .build();
@@ -39,7 +39,7 @@ public class TunnelProtocolService {
             throws JsonProcessingException {
 
         return TunnelMessage.builder()
-                .id(requestId)
+                .requestId(requestId)
                 .type(MessageType.HTTP_REQUEST)
                 .payload(objectMapper.writeValueAsString(request))
                 .build();

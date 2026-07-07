@@ -40,7 +40,7 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
         switch (tunnelMessage.getType()) {
 
             case PONG -> {
-                log.info("Received PONG [{}]", tunnelMessage.getId());
+                log.info("Received PONG [{}]", tunnelMessage.getRequestId());
             }
 
             case HTTP_RESPONSE -> {
@@ -52,11 +52,11 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                         );
 
                 pendingRequestManager.complete(
-                        tunnelMessage.getId(),
+                        tunnelMessage.getRequestId(),
                         response
                 );
 
-                log.info("HTTP Response received [{}]", tunnelMessage.getId());
+                log.info("HTTP Response received [{}]", tunnelMessage.getRequestId());
             }
 
             default -> {

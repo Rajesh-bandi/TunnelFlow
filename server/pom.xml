@@ -78,11 +78,6 @@
             <artifactId>spring-boot-starter-websocket-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.tunnelflow</groupId>
-            <artifactId>TunnelFlowServer</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <build>

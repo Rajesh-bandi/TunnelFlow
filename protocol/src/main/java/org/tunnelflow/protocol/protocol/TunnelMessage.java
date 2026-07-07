@@ -10,10 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class TunnelMessage {
-    String id;
+    private String requestId;
 
-    MessageType type;
+    private MessageType type;
 
-    String payload;
+    private String clientId;
 
+    private String tunnelId;
+
+    private String payload;
 }

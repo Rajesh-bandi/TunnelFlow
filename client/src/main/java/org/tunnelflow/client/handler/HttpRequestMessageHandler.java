@@ -44,13 +44,13 @@ public class HttpRequestMessageHandler implements MessageHandler {
 
                 TunnelMessage tunnelMessage =
                         protocolService.createHttpResponseMessage(
-                                message.getId(),
+                                message.getRequestId(),
                                 response
                         );
 
                 tunnelSender.send(tunnelMessage);
             } catch (Exception e) {
-                log.error("Failed to forward HTTP request [{}]", message.getId(), e);
+                log.error("Failed to forward HTTP request [{}]", message.getRequestId(), e);
             }
         });
     }
