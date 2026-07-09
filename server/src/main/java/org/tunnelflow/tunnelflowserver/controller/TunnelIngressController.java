@@ -33,6 +33,24 @@ public class TunnelIngressController {
     private final PendingRequestManager pendingRequestManager;
     @RequestMapping
     public CompletableFuture<ResponseEntity<?>> tunnelIngress(@RequestBody(required = false)byte[] body, HttpServletRequest request) throws Exception{
+        String host = request.getServerName();
+
+        log.info("=======================================");
+        log.info("Host   : {}", host);
+        log.info("Method : {}", request.getMethod());
+        log.info("URI    : {}", request.getRequestURI());
+        log.info("=======================================");
+
+        String[] parts = host.split("\\.");
+
+        String subdomain = "";
+
+        if (parts.length >= 4) {
+            subdomain = parts[0];
+        }
+
+        log.info("Subdomain: {}", subdomain);
+
         String requestId = UUID.randomUUID().toString();
         log.info("Method: {}", request.getMethod());
         log.info("URI: {}", request.getRequestURI());
