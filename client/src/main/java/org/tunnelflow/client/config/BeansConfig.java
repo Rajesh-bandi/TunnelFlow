@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.tunnelflow.client.service.ClientRegistrationService;
 import org.tunnelflow.client.service.TunnelMessageReceiver;
 import org.tunnelflow.client.websocket.TunnelWebSocketClient;
 
@@ -21,12 +22,13 @@ public class BeansConfig {
     @Bean
     public TunnelWebSocketClient tunnelWebSocketClient(
             TunnelMessageReceiver receiver,
+            ClientRegistrationService registrationService,
             @Value("${tunnelflow.server.websocket-url}") String websocketUrl
     ) {
-
         return new TunnelWebSocketClient(
                 URI.create(websocketUrl),
-                receiver
+                receiver,
+                registrationService
         );
     }
 

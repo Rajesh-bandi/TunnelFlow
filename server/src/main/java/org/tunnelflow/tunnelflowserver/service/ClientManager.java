@@ -15,34 +15,25 @@ public class ClientManager {
             new ConcurrentHashMap<>();
 
     public void register(String clientId, WebSocketSession session) {
-
         clients.put(clientId, session);
-
-        log.info("Client [{}] connected", clientId);
+        log.info("Registered client {}", clientId);
     }
 
     public void unregister(String clientId) {
-
         clients.remove(clientId);
-
-        log.info("Client [{}] disconnected", clientId);
+        log.info("Unregistered client {}", clientId);
     }
 
     public WebSocketSession getSession(String clientId) {
-
         return clients.get(clientId);
     }
 
     public boolean isConnected(String clientId) {
-
         WebSocketSession session = clients.get(clientId);
-
         return session != null && session.isOpen();
     }
 
-    public int connectedClients() {
-
+    public int getConnectedClientCount() {
         return clients.size();
     }
-
 }

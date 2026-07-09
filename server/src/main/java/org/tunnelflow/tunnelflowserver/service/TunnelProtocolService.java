@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.tunnelflow.protocol.http.HttpRequestMessage;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
-
+import org.tunnelflow.protocol.protocol.client.ClientRegisteredResponse;
 
 import java.util.UUID;
 
@@ -42,6 +42,21 @@ public class TunnelProtocolService {
                 .requestId(requestId)
                 .type(MessageType.HTTP_REQUEST)
                 .payload(objectMapper.writeValueAsString(request))
+                .build();
+    }
+
+    public TunnelMessage createClientRegisteredMessage(
+            String clientId
+    ) throws JsonProcessingException {
+
+        ClientRegisteredResponse response =
+                ClientRegisteredResponse.builder()
+                        .clientId(clientId)
+                        .build();
+
+        return TunnelMessage.builder()
+                .type(MessageType.CLIENT_REGISTERED)
+                .payload(objectMapper.writeValueAsString(response))
                 .build();
     }
 }

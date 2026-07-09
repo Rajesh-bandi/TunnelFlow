@@ -9,6 +9,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
+import org.tunnelflow.protocol.protocol.client.ClientRegisterRequest;
+import org.tunnelflow.tunnelflowserver.service.ClientManager;
 import org.tunnelflow.tunnelflowserver.service.PendingRequestManager;
 import org.tunnelflow.tunnelflowserver.service.TunnelProtocolService;
 import org.tunnelflow.tunnelflowserver.service.TunnelSessionManager;
@@ -21,14 +23,15 @@ import static org.tunnelflow.protocol.protocol.MessageType.HTTP_RESPONSE;
 public class TunnelWebSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final TunnelSessionManager sessionManager;
+    private final ClientManager clientManager;
     private final TunnelProtocolService tunnelProtocolService;
     private final PendingRequestManager pendingRequestManager;
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        sessionManager.register(session);
-        TunnelMessage tunnelMessage = tunnelProtocolService.createPingMessage();
-        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(tunnelMessage)));
-        log.info("Client connected");
+
+        log.info("WebSocket connected [{}], waiting for registration...",
+                session.getId());
+
     }
 
     @Override
@@ -57,6 +60,19 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                 );
 
                 log.info("HTTP Response received [{}]", tunnelMessage.getRequestId());
+            }
+            case CLIENT_REGISTER -> {
+
+                ClientRegisterRequest request =
+                        objectMapper.readValue(
+                                tunnelMessage.getPayload(),
+                                ClientRegisterRequest.class
+                        );
+
+                log.info("Client Registration Received");
+                log.info("Machine : {}", request.getMachineName());
+                log.info("OS      : {}", request.getOs());
+                log.info("Version : {}", request.getVersion());
             }
 
             default -> {
