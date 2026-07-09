@@ -15,6 +15,8 @@ import org.tunnelflow.tunnelflowserver.service.PendingRequestManager;
 import org.tunnelflow.tunnelflowserver.service.TunnelProtocolService;
 import org.tunnelflow.tunnelflowserver.service.TunnelSessionManager;
 
+import java.util.UUID;
+
 import static org.tunnelflow.protocol.protocol.MessageType.HTTP_RESPONSE;
 
 @Slf4j
@@ -73,6 +75,12 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                 log.info("Machine : {}", request.getMachineName());
                 log.info("OS      : {}", request.getOs());
                 log.info("Version : {}", request.getVersion());
+
+                String clientId = UUID.randomUUID().toString();
+
+                clientManager.register(clientId, session);
+
+                log.info("Assigned Client ID: {}", clientId);
             }
 
             default -> {
