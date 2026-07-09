@@ -46,10 +46,6 @@ public class LocalHttpForwarder {
         String path = request.getPath();
         log.info("HttpClient class: {}", httpClient.getClass().getName());
         // Remove tunnel prefix
-        if (path.startsWith("/tunnel")) {
-            path = path.substring("/tunnel".length());
-        }
-
         if (path.isBlank()) {
             path = "/";
         }

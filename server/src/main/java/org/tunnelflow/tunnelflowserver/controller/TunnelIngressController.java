@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/tunnel/**")
+@RequestMapping("/**")
 public class TunnelIngressController {
     private final TunnelSessionManager tunnelSessionManager;
     private final TunnelProtocolService tunnelProtocolService;
