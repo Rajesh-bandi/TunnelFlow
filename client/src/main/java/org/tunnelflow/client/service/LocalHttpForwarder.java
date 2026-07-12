@@ -44,40 +44,45 @@ public class LocalHttpForwarder {
             throws IOException, InterruptedException {
 
         String path = request.getPath();
-        log.info("HttpClient class: {}", httpClient.getClass().getName());
-        // Remove tunnel prefix
+
         if (path.isBlank()) {
             path = "/";
         }
 
-        // Build target URL
         String targetUrl = baseUrl + path;
 
-        // Append query parameters
         if (request.getQuery() != null && !request.getQuery().isBlank()) {
             targetUrl += "?" + request.getQuery();
         }
 
-        log.info("Forwarding request to {}", targetUrl);
+        log.info("==================================================");
+        log.info("Forwarding Local HTTP Request");
+        log.info("Method      : {}", request.getMethod());
+        log.info("Target URL  : {}", targetUrl);
+        log.info("Query       : {}", request.getQuery());
+        log.info("Body Length : {}",
+                request.getBody() == null ? 0 : request.getBody().length);
+
+        if (request.getHeaders() != null) {
+            log.info("Incoming Headers:");
+            request.getHeaders().forEach((k, v) ->
+                    log.info("{} = {}", k, v));
+        }
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(targetUrl));
 
-        // Copy request headers
-//        if (request.getHeaders() != null) {
-//
-//            request.getHeaders().forEach((key, values) -> {
-//
-//                if (HOP_BY_HOP_HEADERS.contains(key.toLowerCase())) {
-//                    return;
-//                }
-//
-//                for (String value : values) {
-//                    builder.header(key, value);
-//                }
-//
-//            });
-//        }
+        // Keep this commented for now.
+//    if (request.getHeaders() != null) {
+//        request.getHeaders().forEach((key, values) -> {
+//            if (HOP_BY_HOP_HEADERS.contains(key.toLowerCase())) {
+//                return;
+//            }
+//            for (String value : values) {
+//                builder.header(key, value);
+//            }
+//        });
+//    }
 
         byte[] body = request.getBody() == null
                 ? new byte[0]
@@ -117,12 +122,18 @@ public class LocalHttpForwarder {
                         HttpResponse.BodyHandlers.ofByteArray()
                 );
 
-        Map<String, List<String>> headers =
-                new HashMap<>(response.headers().map());
+        log.info("--------------- Local Response ----------------");
+        log.info("Status      : {}", response.statusCode());
+
+        response.headers().map().forEach((k, v) ->
+                log.info("{} = {}", k, v));
+
+        log.info("Body Length : {}", response.body().length);
+        log.info("==================================================");
 
         return HttpResponseMessage.builder()
                 .status(response.statusCode())
-                .headers(headers)
+                .headers(new HashMap<>(response.headers().map()))
                 .body(response.body())
                 .build();
     }
