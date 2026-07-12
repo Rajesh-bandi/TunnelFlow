@@ -114,11 +114,11 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                 requestId,
                 tunnel.getClientId());
 
-        session.sendMessage(
-                new TextMessage(
-                        objectMapper.writeValueAsString(message)
-                )
-        );
+        String json = objectMapper.writeValueAsString(message);
+
+        synchronized (session) {
+            session.sendMessage(new TextMessage(json));
+        }
 
         HttpResponseMessage tunnelResponse;
 
