@@ -127,6 +127,17 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
             tunnelResponse.getHeaders().forEach((name, values) -> {
 
+                if (name.equalsIgnoreCase("Transfer-Encoding")
+                        || name.equalsIgnoreCase("Connection")
+                        || name.equalsIgnoreCase("Keep-Alive")
+                        || name.equalsIgnoreCase("Upgrade")
+                        || name.equalsIgnoreCase("Proxy-Authenticate")
+                        || name.equalsIgnoreCase("Proxy-Authorization")
+                        || name.equalsIgnoreCase("TE")
+                        || name.equalsIgnoreCase("Trailer")) {
+                    return;
+                }
+
                 for (String value : values) {
                     response.addHeader(name, value);
                 }
