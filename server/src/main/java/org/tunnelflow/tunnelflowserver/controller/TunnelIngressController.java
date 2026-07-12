@@ -25,13 +25,13 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/**")
+@RequestMapping("/tunnel/**")
 public class TunnelIngressController {
     private final TunnelSessionManager tunnelSessionManager;
     private final TunnelProtocolService tunnelProtocolService;
     private final HttpRequestMapper httpRequestMapper;
     private final PendingRequestManager pendingRequestManager;
-    //@RequestMapping
+    @RequestMapping
     public CompletableFuture<ResponseEntity<?>> tunnelIngress(@RequestBody(required = false)byte[] body, HttpServletRequest request) throws Exception{
         String host = request.getServerName();
 
