@@ -35,6 +35,11 @@ public class TunnelIngressController {
     public CompletableFuture<ResponseEntity<?>> tunnelIngress(@RequestBody(required = false)byte[] body, HttpServletRequest request) throws Exception{
         String host = request.getServerName();
 
+        if (!host.endsWith(".tunnel.rajeshbandi.site")) {
+            return CompletableFuture.completedFuture(
+                    ResponseEntity.notFound().build()
+            );
+        }
         log.info("=======================================");
         log.info("Host   : {}", host);
         log.info("Method : {}", request.getMethod());

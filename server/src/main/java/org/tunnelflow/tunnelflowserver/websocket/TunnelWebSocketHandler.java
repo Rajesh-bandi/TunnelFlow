@@ -80,7 +80,16 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
 
                 clientManager.register(clientId, session);
 
-                log.info("Assigned Client ID: {}", clientId);
+                TunnelMessage response =
+                        tunnelProtocolService.createClientRegisteredMessage(clientId);
+
+                session.sendMessage(
+                        new TextMessage(
+                                objectMapper.writeValueAsString(response)
+                        )
+                );
+
+                log.info("Client [{}] registered successfully", clientId);
             }
 
             default -> {

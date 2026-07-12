@@ -45,9 +45,8 @@ public class TunnelProtocolService {
                 .build();
     }
 
-    public TunnelMessage createClientRegisteredMessage(
-            String clientId
-    ) throws JsonProcessingException {
+    public TunnelMessage createClientRegisteredMessage(String clientId)
+            throws JsonProcessingException {
 
         ClientRegisteredResponse response =
                 ClientRegisteredResponse.builder()
@@ -59,4 +58,5 @@ public class TunnelProtocolService {
                 .payload(objectMapper.writeValueAsString(response))
                 .build();
     }
+
 }
