@@ -124,6 +124,11 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
         try {
             tunnelResponse = future.get(30, TimeUnit.SECONDS);
+            log.info("Tunnel response received.");
+            log.info("Status = {}", tunnelResponse.getStatus());
+            log.info("Headers = {}", tunnelResponse.getHeaders());
+            log.info("Body size = {}",
+                    tunnelResponse.getBody() == null ? 0 : tunnelResponse.getBody().length);
         } catch (TimeoutException e) {
             log.error("Tunnel request [{}] timed out", requestId);
             response.sendError(
@@ -132,11 +137,14 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
             );
             return;
         } catch (Exception e) {
-            log.error("Tunnel request [{}] failed", requestId, e);
+
+            log.error("Tunnel failed", e);
+
             response.sendError(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Tunnel failed."
+                    e.getMessage()
             );
+
             return;
         }
 
@@ -172,6 +180,7 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                 log.info("Copying Header: {} -> {}", name, values);
 
                 for (String value : values) {
+                    log.info("Adding header {} = {}", name, value);
                     response.addHeader(name, value);
                 }
 
