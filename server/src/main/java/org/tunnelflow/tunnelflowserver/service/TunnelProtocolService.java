@@ -45,12 +45,14 @@ public class TunnelProtocolService {
                 .build();
     }
 
-    public TunnelMessage createClientRegisteredMessage(String clientId)
+    public TunnelMessage createClientRegisteredMessage(String clientId,String TunnelId,String publicUrl)
             throws JsonProcessingException {
 
         ClientRegisteredResponse response =
                 ClientRegisteredResponse.builder()
                         .clientId(clientId)
+                        .publicUrl(publicUrl)
+                        .tunnelId(TunnelId)
                         .build();
 
         return TunnelMessage.builder()

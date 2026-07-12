@@ -4,16 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisterRequest;
-import org.tunnelflow.tunnelflowserver.service.ClientManager;
-import org.tunnelflow.tunnelflowserver.service.PendingRequestManager;
-import org.tunnelflow.tunnelflowserver.service.TunnelProtocolService;
-import org.tunnelflow.tunnelflowserver.service.TunnelSessionManager;
+import org.tunnelflow.tunnelflowserver.model.TunnelInfo;
+import org.tunnelflow.tunnelflowserver.service.*;
 
 import java.util.UUID;
 
@@ -24,7 +23,7 @@ import static org.tunnelflow.protocol.protocol.MessageType.HTTP_RESPONSE;
 @RequiredArgsConstructor
 public class TunnelWebSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
-    private final TunnelSessionManager sessionManager;
+    private final TunnelManager tunnelManager;
     private final ClientManager clientManager;
     private final TunnelProtocolService tunnelProtocolService;
     private final PendingRequestManager pendingRequestManager;
@@ -77,11 +76,18 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                 log.info("Version : {}", request.getVersion());
 
                 String clientId = UUID.randomUUID().toString();
-
                 clientManager.register(clientId, session);
+                TunnelInfo tunnel = tunnelManager.createTunnel(clientId);
+
+                String publicUrl =
+                        "https://" + tunnel.getTunnelId() + ".tunnel.rajeshbandi.site";
 
                 TunnelMessage response =
-                        tunnelProtocolService.createClientRegisteredMessage(clientId);
+                        tunnelProtocolService.createClientRegisteredMessage(
+                                clientId,
+                                tunnel.getTunnelId(),
+                                publicUrl
+                        );
 
                 session.sendMessage(
                         new TextMessage(
@@ -99,12 +105,19 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
     }
     @Override
     public void afterConnectionClosed(WebSocketSession session,
-                                      org.springframework.web.socket.CloseStatus status)
+                                      CloseStatus status)
             throws Exception {
 
         log.info("Client disconnected: {}", status);
 
-        sessionManager.unRegister(session);
+        String clientId = clientManager.getClientId(session);
+
+        if (clientId != null) {
+
+            tunnelManager.removeTunnelByClientId(clientId);
+
+            clientManager.unregister(session);
+        }
 
         super.afterConnectionClosed(session, status);
     }

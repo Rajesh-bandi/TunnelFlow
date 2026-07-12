@@ -29,6 +29,11 @@ public class ClientRegisteredHandler implements MessageHandler {
                         ClientRegisteredResponse.class
                 );
 
-        log.info("Assigned Client ID: {}", response.getClientId());
+        log.info("======================================");
+        log.info("TunnelFlow Connected");
+        log.info("Client ID : {}", response.getClientId());
+        log.info("Tunnel ID : {}", response.getTunnelId());
+        log.info("Public URL: {}", response.getPublicUrl());
+        log.info("======================================");
     }
 }

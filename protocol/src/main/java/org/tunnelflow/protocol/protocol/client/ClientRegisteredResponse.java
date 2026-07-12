@@ -13,4 +13,8 @@ public class ClientRegisteredResponse {
 
     private String clientId;
 
+    private String tunnelId;
+
+    private String publicUrl;
+
 }

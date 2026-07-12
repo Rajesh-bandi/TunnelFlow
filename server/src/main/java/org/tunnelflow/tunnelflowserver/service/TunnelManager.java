@@ -47,4 +47,45 @@ public class TunnelManager {
 
         return tunnels.size();
     }
+    public TunnelInfo createTunnel(String clientId) {
+
+        String tunnelId = generateTunnelId();
+
+        TunnelInfo tunnelInfo = TunnelInfo.builder()
+                .tunnelId(tunnelId)
+                .clientId(clientId)
+                .build();
+
+        tunnels.put(tunnelId, tunnelInfo);
+
+        log.info("Tunnel [{}] created for client [{}]",
+                tunnelId,
+                clientId);
+
+        return tunnelInfo;
+    }
+    private String generateTunnelId() {
+
+        return java.util.UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 8);
+
+    }
+    public void removeTunnelByClientId(String clientId) {
+
+        tunnels.entrySet().removeIf(entry -> {
+
+            boolean remove =
+                    entry.getValue().getClientId().equals(clientId);
+
+            if (remove) {
+                log.info("Tunnel [{}] removed for client [{}]",
+                        entry.getKey(),
+                        clientId);
+            }
+
+            return remove;
+        });
+    }
 }
