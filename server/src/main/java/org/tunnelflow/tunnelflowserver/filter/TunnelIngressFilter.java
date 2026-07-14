@@ -115,7 +115,8 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
         TunnelMessage message =
                 tunnelProtocolService.createHttpRequestTunnelMessage(
                         httpRequestMapper.map(request, body),
-                        requestId
+                        requestId,
+                        tunnel.getTunnelId()
                 );
 
         log.info("Queued HTTP_REQUEST [{}] for client [{}]",

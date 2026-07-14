@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.tunnelflow.client.runtime.TunnelRuntime;
+import org.tunnelflow.client.runtime.TunnelRuntimeRegistry;
 import org.tunnelflow.protocol.http.HttpRequestMessage;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 
@@ -35,21 +37,30 @@ public class LocalHttpForwarder {
 
     );
 
-    @Value("${tunnelflow.local.base-url}")
-    private String baseUrl;
-
+//    @Value("${tunnelflow.local.base-url}")
+//    private String baseUrl;
+    private final TunnelRuntimeRegistry tunnelRuntimeRegistry;
     private final HttpClient httpClient;
 
-    public HttpResponseMessage forward(HttpRequestMessage request)
+    public HttpResponseMessage forward(HttpRequestMessage request, String tunnelId)
             throws IOException, InterruptedException {
-
+        TunnelRuntime runtime =
+                tunnelRuntimeRegistry.get(tunnelId);
+        if (runtime == null) {
+            throw new IllegalStateException(
+                    "No runtime found for tunnel " + tunnelId
+            );
+        }
         String path = request.getPath();
 
         if (path.isBlank()) {
             path = "/";
         }
 
-        String targetUrl = baseUrl + path;
+        String targetUrl =
+                "http://localhost:" +
+                        runtime.getLocalPort() +
+                        path;
 
         if (request.getQuery() != null && !request.getQuery().isBlank()) {
             targetUrl += "?" + request.getQuery();

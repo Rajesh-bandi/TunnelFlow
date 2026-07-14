@@ -21,7 +21,7 @@ public class TunnelCreationService {
     private final TunnelSender tunnelSender;
 
 
-    public String createTunnel(int port) throws JsonProcessingException {
+    public TunnelCreatedResponse createTunnel(int port) throws JsonProcessingException {
         String requestId = UUID.randomUUID().toString();
         CompletableFuture<TunnelCreatedResponse> future =
                 pendingTunnelRequestManager.register(requestId);
@@ -38,7 +38,7 @@ public class TunnelCreationService {
 
             TunnelCreatedResponse response = future.get();
 
-            return response.getPublicUrl();
+            return response;
 
         } catch (Exception e) {
 

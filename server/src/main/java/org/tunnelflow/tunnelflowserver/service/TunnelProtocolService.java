@@ -54,11 +54,12 @@ public class TunnelProtocolService {
                 .build();
     }
 
-    public TunnelMessage createHttpRequestTunnelMessage(HttpRequestMessage request, String requestId)
+    public TunnelMessage createHttpRequestTunnelMessage(HttpRequestMessage request, String requestId,String tunnelId)
             throws JsonProcessingException {
 
         return TunnelMessage.builder()
                 .requestId(requestId)
+                .tunnelId(tunnelId)
                 .type(MessageType.HTTP_REQUEST)
                 .payload(objectMapper.writeValueAsString(request))
                 .build();

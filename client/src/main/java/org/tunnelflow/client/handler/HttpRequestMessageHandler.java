@@ -46,7 +46,10 @@ public class HttpRequestMessageHandler implements MessageHandler {
                         );
 
                 HttpResponseMessage response =
-                        forwarder.forward(request);
+                        forwarder.forward(
+                                request,
+                                message.getTunnelId()
+                        );
 
                 TunnelMessage tunnelMessage =
                         protocolService.createHttpResponseMessage(
