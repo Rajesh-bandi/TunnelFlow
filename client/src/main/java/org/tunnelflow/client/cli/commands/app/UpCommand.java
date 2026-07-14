@@ -2,9 +2,7 @@ package org.tunnelflow.client.cli.commands.app;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.tunnelflow.client.config.loader.ConfigLoader;
-import org.tunnelflow.client.config.model.TunnelFlowConfig;
-import org.tunnelflow.client.service.ApplicationStartupService;
+import org.tunnelflow.client.service.ApplicationManager;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -16,12 +14,15 @@ import java.nio.file.Path;
         description = "Start a TunnelFlow application."
 )
 public class UpCommand implements Runnable {
-    private final ApplicationStartupService applicationStartupService;
+
+    private final ApplicationManager applicationManager;
 
     @Override
     public void run() {
 
-        applicationStartupService.start();
+        Path configPath = Path.of("tunnelflow.yaml");
+
+        applicationManager.up(configPath);
 
     }
 
