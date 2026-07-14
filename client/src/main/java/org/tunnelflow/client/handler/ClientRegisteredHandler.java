@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.tunnelflow.client.service.PendingRegistrationManager;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisteredResponse;
@@ -12,7 +13,7 @@ import org.tunnelflow.protocol.protocol.client.ClientRegisteredResponse;
 @RequiredArgsConstructor
 @Slf4j
 public class ClientRegisteredHandler implements MessageHandler {
-
+    private final PendingRegistrationManager pendingRegistrationManager;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -28,6 +29,9 @@ public class ClientRegisteredHandler implements MessageHandler {
                         message.getPayload(),
                         ClientRegisteredResponse.class
                 );
+        pendingRegistrationManager.complete(
+                response.getClientId()
+        );
 
         log.info("======================================");
         log.info("TunnelFlow Connected");

@@ -34,8 +34,6 @@ public class TunnelWebSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshake) {
 
         log.info("Connected to tunnel server");
-
-        registrationService.register();
     }
 
     @Override

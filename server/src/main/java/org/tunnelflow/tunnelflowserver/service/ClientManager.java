@@ -21,7 +21,7 @@ public class ClientManager {
                 new ClientConnection(session);
 
         clients.put(clientId, connection);
-
+        sessionToClient.put(session, clientId);
         log.info("Registered client {}", clientId);
     }
 

@@ -3,6 +3,7 @@ package org.tunnelflow.client.cli.commands.expose;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.tunnelflow.client.service.TunnelConnectionManager;
 import org.tunnelflow.client.service.TunnelCreationService;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -15,6 +16,7 @@ import picocli.CommandLine.Parameters;
 )
 public class ExposeCommand implements Runnable {
     private final TunnelCreationService tunnelCreationService;
+    private final TunnelConnectionManager tunnelConnectionManager;
     @Parameters(
             index = "0",
             description = "Local port to expose."
@@ -23,6 +25,7 @@ public class ExposeCommand implements Runnable {
 
     @Override
     public void run() {
+        tunnelConnectionManager.connect();
         String url = null;
         try {
             url = tunnelCreationService.createTunnel(port);

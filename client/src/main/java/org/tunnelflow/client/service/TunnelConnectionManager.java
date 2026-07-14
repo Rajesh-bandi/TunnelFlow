@@ -42,7 +42,9 @@ public class TunnelConnectionManager {
 
             log.info("Connecting to {}", serverUrl);
 
-            client.connect();
+            client.connectBlocking();
+
+            registrationService.register();
 
         } catch (Exception e) {
 

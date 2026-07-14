@@ -9,16 +9,19 @@ import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisterRequest;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ClientRegistrationService {
-
+    private final PendingRegistrationManager pendingRegistrationManager;
     private final TunnelSender tunnelSender;
     private final ObjectMapper objectMapper;
 
     public void register() {
+        CompletableFuture<String> future =
+                pendingRegistrationManager.register();
 
         try {
 
@@ -41,6 +44,9 @@ public class ClientRegistrationService {
             tunnelSender.send(message);
 
             log.info("CLIENT_REGISTER sent");
+            String clientId = future.get();
+
+            log.info("Client [{}] registered successfully.", clientId);
 
         } catch (Exception e) {
 
