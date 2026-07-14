@@ -18,7 +18,7 @@ public class PlaceholderResolver {
 
             // Copy configured environment into the working environment
             Map<String, String> configured =
-                    deployment.getConfig().getEnvironment();
+                    deployment.getConfig().getEnv();
 
             if (configured != null) {
                 deployment.getResolvedEnvironment().putAll(configured);

@@ -16,7 +16,7 @@ public class ProcessLauncher {
             ApplicationDeployment deployment
     ){
         String workingDirectory =
-                deployment.getConfig().getWorkingDirectory();
+                deployment.getConfig().getPath();
 
         String command =
                 deployment.getConfig().getCommand();

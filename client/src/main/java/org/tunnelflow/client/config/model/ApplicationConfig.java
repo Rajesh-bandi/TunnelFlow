@@ -9,11 +9,14 @@ public class ApplicationConfig {
 
     private String name;
 
-    private String workingDirectory;
+    private boolean enabled;
+
+    private String path;
 
     private String command;
 
     private int port;
 
-    private Map<String, String> environment;
+    private Map<String, String> env;
+
 }
