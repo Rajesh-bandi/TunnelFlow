@@ -28,6 +28,7 @@ public class TunnelProtocolService {
                 .build();
     }
     public TunnelMessage createTunnelCreatedMessage(
+            String requestId,
             String tunnelId,
             String publicUrl
     ) throws JsonProcessingException {
@@ -40,6 +41,7 @@ public class TunnelProtocolService {
 
         return TunnelMessage.builder()
                 .type(MessageType.TUNNEL_CREATED)
+                .requestId(requestId)
                 .payload(objectMapper.writeValueAsString(response))
                 .build();
     }

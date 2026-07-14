@@ -126,6 +126,7 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                 log.info("Public URL: {}", publicUrl);
                 TunnelMessage response =
                         tunnelProtocolService.createTunnelCreatedMessage(
+                                tunnelMessage.getRequestId(),
                                 tunnel.getTunnelId(),
                                 publicUrl
                         );
