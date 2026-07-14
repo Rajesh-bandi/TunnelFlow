@@ -90,12 +90,20 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
             return;
         }
 
-        WebSocketSession session = clientManager.getSession(tunnel.getClientId());
+        ClientConnection connection =
+                clientManager.getConnection(tunnel.getClientId());
 
-        if (session == null || !session.isOpen()) {
+        if (connection == null
+                || connection.getSession() == null
+                || !connection.getSession().isOpen()) {
+
             log.error("Client [{}] is offline", tunnel.getClientId());
-            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                    "Tunnel client is offline.");
+
+            response.sendError(
+                    HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                    "Tunnel client is offline."
+            );
+
             return;
         }
 
@@ -110,14 +118,21 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                         requestId
                 );
 
-        log.info("Sending HTTP_REQUEST [{}] to client [{}]",
+        log.info("Queued HTTP_REQUEST [{}] for client [{}]",
                 requestId,
                 tunnel.getClientId());
 
-        String json = objectMapper.writeValueAsString(message);
 
-        synchronized (session) {
-            session.sendMessage(new TextMessage(json));
+        boolean queued = connection.getOutboundQueue().offer(message);
+        if (!queued) {
+            log.error("Failed to enqueue message {}", requestId);
+
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Failed to enqueue request."
+            );
+
+            return;
         }
 
         HttpResponseMessage tunnelResponse;

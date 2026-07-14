@@ -1,14 +1,9 @@
 package org.tunnelflow.client.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.tunnelflow.client.service.ClientRegistrationService;
-import org.tunnelflow.client.service.TunnelMessageReceiver;
-import org.tunnelflow.client.websocket.TunnelWebSocketClient;
-
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
@@ -20,18 +15,9 @@ public class BeansConfig {
     }
 
     @Bean
-    public TunnelWebSocketClient tunnelWebSocketClient(
-            TunnelMessageReceiver receiver,
-            ClientRegistrationService registrationService,
-            @Value("${tunnelflow.server.websocket-url}") String websocketUrl
-    ) {
-        return new TunnelWebSocketClient(
-                URI.create(websocketUrl),
-                receiver,
-                registrationService
-        );
+    public ObjectMapper yamlObjectMapper() {
+        return new ObjectMapper(new YAMLFactory());
     }
-
     @Bean(destroyMethod = "")  // empty string = don't call any destroy method
     public HttpClient httpClient() {
         return HttpClient.newBuilder()

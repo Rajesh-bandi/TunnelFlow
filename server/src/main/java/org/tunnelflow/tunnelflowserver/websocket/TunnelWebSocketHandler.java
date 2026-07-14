@@ -11,6 +11,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisterRequest;
+import org.tunnelflow.protocol.protocol.tunnel.CreateTunnelRequest;
 import org.tunnelflow.tunnelflowserver.model.TunnelInfo;
 import org.tunnelflow.tunnelflowserver.service.*;
 
@@ -27,6 +28,7 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
     private final ClientManager clientManager;
     private final TunnelProtocolService tunnelProtocolService;
     private final PendingRequestManager pendingRequestManager;
+    private final OutboundMessageSender outboundMessageSender;
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
@@ -77,16 +79,13 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
 
                 String clientId = UUID.randomUUID().toString();
                 clientManager.register(clientId, session);
-                TunnelInfo tunnel = tunnelManager.createTunnel(clientId);
+                ClientConnection connection =
+                        clientManager.getConnection(clientId);
 
-                String publicUrl =
-                        "https://" + tunnel.getTunnelId() + ".tunnel.rajeshbandi.site";
-
+                outboundMessageSender.start(connection);
                 TunnelMessage response =
                         tunnelProtocolService.createClientRegisteredMessage(
-                                clientId,
-                                tunnel.getTunnelId(),
-                                publicUrl
+                                clientId
                         );
 
                 session.sendMessage(
@@ -96,6 +95,46 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                 );
 
                 log.info("Client [{}] registered successfully", clientId);
+            }
+
+            case CREATE_TUNNEL -> {
+
+                CreateTunnelRequest request =
+                        objectMapper.readValue(
+                                tunnelMessage.getPayload(),
+                                CreateTunnelRequest.class
+                        );
+                String clientId = clientManager.getClientId(session);
+                if (clientId == null) {
+                    log.warn("Unregistered client attempted to create a tunnel.");
+                    break;
+                }
+                TunnelInfo tunnel =
+                        tunnelManager.createTunnel(
+                                clientId,
+                                request.getLocalPort()
+                        );
+                log.info(
+                        "Tunnel [{}] created for port {}",
+                        tunnel.getTunnelId(),
+                        request.getLocalPort()
+                );
+                String publicUrl =
+                        "https://" +
+                                tunnel.getTunnelId() +
+                                ".tunnel.rajeshbandi.site";
+                log.info("Public URL: {}", publicUrl);
+                TunnelMessage response =
+                        tunnelProtocolService.createTunnelCreatedMessage(
+                                tunnel.getTunnelId(),
+                                publicUrl
+                        );
+
+                session.sendMessage(
+                        new TextMessage(
+                                objectMapper.writeValueAsString(response)
+                        )
+                );
             }
 
             default -> {

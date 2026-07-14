@@ -11,13 +11,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ClientManager {
 
-    private final Map<String, WebSocketSession> clients =
+    private final Map<String, ClientConnection> clients =
             new ConcurrentHashMap<>();
     private final Map<WebSocketSession, String> sessionToClient =
             new ConcurrentHashMap<>();
     public void register(String clientId, WebSocketSession session) {
-        clients.put(clientId, session);
-        sessionToClient.put(session, clientId);
+
+        ClientConnection connection =
+                new ClientConnection(session);
+
+        clients.put(clientId, connection);
+
         log.info("Registered client {}", clientId);
     }
 
@@ -35,13 +39,15 @@ public class ClientManager {
         }
     }
 
-    public WebSocketSession getSession(String clientId) {
+    public ClientConnection getConnection(String clientId) {
         return clients.get(clientId);
     }
 
     public boolean isConnected(String clientId) {
-        WebSocketSession session = clients.get(clientId);
-        return session != null && session.isOpen();
+        ClientConnection connection = clients.get(clientId);
+        return connection != null
+                && connection.getSession() != null
+                && connection.getSession().isOpen();
     }
 
     public int getConnectedClientCount() {

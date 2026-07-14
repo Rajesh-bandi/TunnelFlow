@@ -47,13 +47,14 @@ public class TunnelManager {
 
         return tunnels.size();
     }
-    public TunnelInfo createTunnel(String clientId) {
+    public TunnelInfo createTunnel(String clientId,int localPort) {
 
         String tunnelId = generateTunnelId();
 
         TunnelInfo tunnelInfo = TunnelInfo.builder()
                 .tunnelId(tunnelId)
                 .clientId(clientId)
+                .localPort(localPort)
                 .build();
 
         tunnels.put(tunnelId, tunnelInfo);

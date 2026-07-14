@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
+import org.tunnelflow.protocol.protocol.tunnel.CreateTunnelRequest;
 
 
 @Service
@@ -34,6 +35,22 @@ public class TunnelProtocolService {
                 .requestId(requestId)
                 .type(MessageType.HTTP_RESPONSE)
                 .payload(objectMapper.writeValueAsString(response))
+                .build();
+    }
+    public TunnelMessage createCreateTunnelMessage(
+            String requestId,
+            int localPort
+    ) throws JsonProcessingException {
+
+        CreateTunnelRequest request =
+                CreateTunnelRequest.builder()
+                        .localPort(localPort)
+                        .build();
+
+        return TunnelMessage.builder()
+                .requestId(requestId)
+                .type(MessageType.CREATE_TUNNEL)
+                .payload(objectMapper.writeValueAsString(request))
                 .build();
     }
 

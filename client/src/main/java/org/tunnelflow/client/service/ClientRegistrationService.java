@@ -24,8 +24,10 @@ public class ClientRegistrationService {
 
             ClientRegisterRequest request =
                     ClientRegisterRequest.builder()
-                            .machineName( Optional.ofNullable(System.getenv("COMPUTERNAME"))
-                                    .orElse(System.getenv("HOSTNAME")))
+                            .machineName(
+                                    Optional.ofNullable(System.getenv("COMPUTERNAME"))
+                                            .orElse(System.getenv("HOSTNAME"))
+                            )
                             .os(System.getProperty("os.name"))
                             .version("1.0.0")
                             .build();

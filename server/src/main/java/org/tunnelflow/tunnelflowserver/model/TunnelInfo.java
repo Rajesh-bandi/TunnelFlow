@@ -11,4 +11,7 @@ public class TunnelInfo {
 
     private String clientId;
 
+    private int localPort;
+
+
 }

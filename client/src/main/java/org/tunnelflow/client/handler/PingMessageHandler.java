@@ -12,8 +12,10 @@ import org.tunnelflow.protocol.protocol.TunnelMessage;
 @Service
 @RequiredArgsConstructor
 public class PingMessageHandler implements MessageHandler {
+
     private final TunnelSender tunnelSender;
     private final TunnelProtocolService protocolService;
+
     @Override
     public MessageType getSupportedType() {
         return MessageType.PING;
@@ -21,8 +23,12 @@ public class PingMessageHandler implements MessageHandler {
 
     @Override
     public void handle(TunnelMessage message) throws Exception {
+
         log.info("Received PING [{}]", message.getRequestId());
-        TunnelMessage pongMessage = protocolService.createPongMessage(message.getRequestId());
+
+        TunnelMessage pongMessage =
+                protocolService.createPongMessage(message.getRequestId());
+
         tunnelSender.send(pongMessage);
     }
 }

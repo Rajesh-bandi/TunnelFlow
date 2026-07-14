@@ -1,17 +1,18 @@
-package org.tunnelflow.protocol.protocol.client;
+package org.tunnelflow.protocol.protocol.tunnel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientRegisteredResponse {
+public class TunnelCreatedResponse {
 
-    private String clientId;
+    private String tunnelId;
 
+    private String publicUrl;
 
 }

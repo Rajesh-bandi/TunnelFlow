@@ -1,0 +1,22 @@
+version: 1
+
+project:
+  name: my-app
+
+services:
+
+  frontend:
+    enabled: true
+    path: C:\Users\bandi\OneDrive\Downloads\quiz app\frontend
+    command: npm run dev
+    port:
+
+    env:
+
+  backend:
+    enabled: true
+    path: C:\Users\bandi\OneDrive\Downloads\quiz app\backend
+    command: npm start
+    port:
+
+    env:

@@ -7,6 +7,7 @@ import org.tunnelflow.protocol.http.HttpRequestMessage;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisteredResponse;
+import org.tunnelflow.protocol.protocol.tunnel.TunnelCreatedResponse;
 
 import java.util.UUID;
 
@@ -24,6 +25,22 @@ public class TunnelProtocolService {
                 .requestId(UUID.randomUUID().toString())
                 .type(MessageType.PING)
                 .payload("PING")
+                .build();
+    }
+    public TunnelMessage createTunnelCreatedMessage(
+            String tunnelId,
+            String publicUrl
+    ) throws JsonProcessingException {
+
+        TunnelCreatedResponse response =
+                TunnelCreatedResponse.builder()
+                        .tunnelId(tunnelId)
+                        .publicUrl(publicUrl)
+                        .build();
+
+        return TunnelMessage.builder()
+                .type(MessageType.TUNNEL_CREATED)
+                .payload(objectMapper.writeValueAsString(response))
                 .build();
     }
 
@@ -45,14 +62,12 @@ public class TunnelProtocolService {
                 .build();
     }
 
-    public TunnelMessage createClientRegisteredMessage(String clientId,String TunnelId,String publicUrl)
+    public TunnelMessage createClientRegisteredMessage(String clientId)
             throws JsonProcessingException {
 
         ClientRegisteredResponse response =
                 ClientRegisteredResponse.builder()
                         .clientId(clientId)
-                        .publicUrl(publicUrl)
-                        .tunnelId(TunnelId)
                         .build();
 
         return TunnelMessage.builder()
