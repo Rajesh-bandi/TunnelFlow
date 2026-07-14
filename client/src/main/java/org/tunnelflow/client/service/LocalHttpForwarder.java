@@ -37,8 +37,7 @@ public class LocalHttpForwarder {
 
     );
 
-//    @Value("${tunnelflow.local.base-url}")
-//    private String baseUrl;
+
     private final TunnelRuntimeRegistry tunnelRuntimeRegistry;
     private final HttpClient httpClient;
 

@@ -36,7 +36,7 @@ public class HttpRequestMessageHandler implements MessageHandler {
     public void handle(TunnelMessage message) {
 
         executor.submit(() -> {
-
+            long start = System.nanoTime();
             try {
 
                 HttpRequestMessage request =
@@ -45,12 +45,20 @@ public class HttpRequestMessageHandler implements MessageHandler {
                                 HttpRequestMessage.class
                         );
 
+                long beforeForward = System.nanoTime();
+
                 HttpResponseMessage response =
                         forwarder.forward(
                                 request,
                                 message.getTunnelId()
                         );
 
+                long afterForward = System.nanoTime();
+                log.info(
+                        "[{}] Local forwarding took {} ms",
+                        message.getRequestId(),
+                        (afterForward - beforeForward) / 1_000_000
+                );
                 TunnelMessage tunnelMessage =
                         protocolService.createHttpResponseMessage(
                                 message.getRequestId(),
@@ -58,7 +66,13 @@ public class HttpRequestMessageHandler implements MessageHandler {
                         );
 
                 tunnelSender.send(tunnelMessage);
+                long end = System.nanoTime();
 
+                log.info(
+                        "[{}] Total client processing took {} ms",
+                        message.getRequestId(),
+                        (end - start) / 1_000_000
+                );
             } catch (Exception e) {
 
                 log.error(
