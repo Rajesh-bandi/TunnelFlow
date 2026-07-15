@@ -10,6 +10,7 @@ import org.tunnelflow.client.config.validation.ConfigValidator;
 import org.tunnelflow.client.config.validation.ValidationResult;
 import org.tunnelflow.client.runtime.ApplicationRuntime;
 import org.tunnelflow.client.runtime.ApplicationRuntimeRegistry;
+import org.tunnelflow.client.runtime.TunnelRuntimeRegistry;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -19,19 +20,23 @@ import java.util.Map;
 @Slf4j
 public class ApplicationManager {
 
+    private final TunnelConnectionManager tunnelConnectionManager;
     private final ConfigLoader configLoader;
     private final ConfigValidator configValidator;
     private final TunnelProvisioner tunnelProvisioner;
     private final PlaceholderResolver placeholderResolver;
-    private final ApplicationRuntimeRegistry runtimeRegistry;
     private final ProcessLauncher processLauncher;
+
+    private final ApplicationRuntimeRegistry applicationRuntimeRegistry;
+    private final TunnelRuntimeRegistry tunnelRuntimeRegistry;
 
     public void up(Path configPath) {
 
+        tunnelConnectionManager.connect();
+
         log.info("Starting application...");
 
-        TunnelFlowConfig config =
-                loadConfiguration(configPath);
+        TunnelFlowConfig config = loadConfiguration(configPath);
 
         validateConfiguration(config);
 
@@ -43,7 +48,6 @@ public class ApplicationManager {
         launchApplications(deployments);
 
         log.info("Application startup completed.");
-
     }
 
     private TunnelFlowConfig loadConfiguration(Path configPath) {
@@ -52,8 +56,7 @@ public class ApplicationManager {
 
     private void validateConfiguration(TunnelFlowConfig config) {
 
-        ValidationResult result =
-                configValidator.validate(config);
+        ValidationResult result = configValidator.validate(config);
 
         if (!result.isValid()) {
 
@@ -63,6 +66,7 @@ public class ApplicationManager {
             throw new RuntimeException("Configuration validation failed.");
         }
     }
+
     private void launchApplications(
             Map<String, ApplicationDeployment> deployments
     ) {
@@ -72,7 +76,11 @@ public class ApplicationManager {
             ApplicationRuntime runtime =
                     processLauncher.launch(deployment);
 
-            runtimeRegistry.register(name, runtime);
+            // Register application runtime
+            applicationRuntimeRegistry.register(name, runtime);
+
+            // Register tunnel runtime for HTTP forwarding
+            tunnelRuntimeRegistry.register(runtime.getTunnelRuntime());
 
             log.info("{} started successfully", name);
 

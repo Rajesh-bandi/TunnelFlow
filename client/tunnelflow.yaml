@@ -8,7 +8,7 @@ apps:
   frontend:
     enabled: true
     path: C:\Users\bandi\OneDrive\Downloads\simple_notes_app\simple-notes-frontend
-    command: npm run dev
+    command: npm run dev -- --host
     port: 5173
 
     env:
@@ -17,7 +17,7 @@ apps:
   backend:
     enabled: true
     path: C:\Users\bandi\OneDrive\Downloads\simple_notes_app\simpleNotes
-    command: ./mvnw spring-boot:run
+    command: .\mvnw.cmd spring-boot:run
     port: 8080
 
     env:

@@ -2,7 +2,6 @@ package org.tunnelflow.client.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.tunnelflow.client.runtime.TunnelRuntime;
 import org.tunnelflow.client.runtime.TunnelRuntimeRegistry;
@@ -15,16 +14,14 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class LocalHttpForwarder {
-    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
 
+    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
             "connection",
             "host",
             "content-length",
@@ -34,35 +31,39 @@ public class LocalHttpForwarder {
             "te",
             "trailer",
             "upgrade"
-
     );
-
 
     private final TunnelRuntimeRegistry tunnelRuntimeRegistry;
     private final HttpClient httpClient;
 
-    public HttpResponseMessage forward(HttpRequestMessage request, String tunnelId)
-            throws IOException, InterruptedException {
+    public HttpResponseMessage forward(
+            HttpRequestMessage request,
+            String tunnelId
+    ) throws IOException, InterruptedException {
+
         TunnelRuntime runtime =
                 tunnelRuntimeRegistry.get(tunnelId);
+
         if (runtime == null) {
             throw new IllegalStateException(
                     "No runtime found for tunnel " + tunnelId
             );
         }
+
         String path = request.getPath();
 
-        if (path.isBlank()) {
+        if (path == null || path.isBlank()) {
             path = "/";
         }
 
-        String targetUrl =
-                "http://localhost:" +
-                        runtime.getLocalPort() +
-                        path;
+        StringBuilder targetUrl = new StringBuilder(
+                "http://localhost:"
+                        + runtime.getLocalPort()
+                        + path
+        );
 
         if (request.getQuery() != null && !request.getQuery().isBlank()) {
-            targetUrl += "?" + request.getQuery();
+            targetUrl.append("?").append(request.getQuery());
         }
 
         log.info("==================================================");
@@ -73,58 +74,48 @@ public class LocalHttpForwarder {
         log.info("Body Length : {}",
                 request.getBody() == null ? 0 : request.getBody().length);
 
+        HttpRequest.Builder builder =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(targetUrl.toString()));
+
+        // Forward all headers except hop-by-hop headers
         if (request.getHeaders() != null) {
+
             log.info("Incoming Headers:");
-            request.getHeaders().forEach((k, v) ->
-                    log.info("{} = {}", k, v));
+
+            request.getHeaders().forEach((key, values) -> {
+
+                log.info("{} = {}", key, values);
+
+                if (HOP_BY_HOP_HEADERS.contains(key.toLowerCase())) {
+                    return;
+                }
+
+                for (String value : values) {
+                    builder.header(key, value);
+                }
+            });
         }
 
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(targetUrl));
+        byte[] body =
+                request.getBody() == null
+                        ? new byte[0]
+                        : request.getBody();
 
-        // Keep this commented for now.
-//    if (request.getHeaders() != null) {
-//        request.getHeaders().forEach((key, values) -> {
-//            if (HOP_BY_HOP_HEADERS.contains(key.toLowerCase())) {
-//                return;
-//            }
-//            for (String value : values) {
-//                builder.header(key, value);
-//            }
-//        });
-//    }
+        String method = request.getMethod().toUpperCase();
 
-        byte[] body = request.getBody() == null
-                ? new byte[0]
-                : request.getBody();
+        HttpRequest.BodyPublisher publisher =
+                switch (method) {
 
-        switch (request.getMethod().toUpperCase()) {
+                    case "GET", "HEAD", "OPTIONS" ->
+                            HttpRequest.BodyPublishers.noBody();
 
-            case "GET" -> builder.GET();
+                    default ->
+                            HttpRequest.BodyPublishers.ofByteArray(body);
 
-            case "POST" ->
-                    builder.POST(HttpRequest.BodyPublishers.ofByteArray(body));
+                };
 
-            case "PUT" ->
-                    builder.PUT(HttpRequest.BodyPublishers.ofByteArray(body));
-
-            case "DELETE" ->
-                    builder.method(
-                            "DELETE",
-                            HttpRequest.BodyPublishers.ofByteArray(body)
-                    );
-
-            case "PATCH" ->
-                    builder.method(
-                            "PATCH",
-                            HttpRequest.BodyPublishers.ofByteArray(body)
-                    );
-
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unsupported HTTP method: " + request.getMethod()
-                    );
-        }
+        builder.method(method, publisher);
 
         HttpResponse<byte[]> response =
                 httpClient.send(
