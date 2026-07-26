@@ -6,6 +6,7 @@ function App() {
     const [tunnel, setTunnel] = useState(null);
     const [tunnels, setTunnels] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [stoppingTunnelId, setStoppingTunnelId] = useState(null);
     const [error, setError] = useState("");
 
     // Fetch all currently active tunnels
@@ -29,20 +30,24 @@ function App() {
     };
 
     // Load TunnelFlow status and active tunnels
-    // when dashboard opens
     useEffect(() => {
 
         fetch("http://localhost:4040/api/status")
             .then((response) => {
+
                 if (!response.ok) {
-                    throw new Error("Unable to connect to TunnelFlow");
+                    throw new Error(
+                        "Unable to connect to TunnelFlow"
+                    );
                 }
 
                 return response.json();
             })
             .then((data) => setStatus(data))
             .catch(() =>
-                setError("Unable to connect to TunnelFlow")
+                setError(
+                    "Unable to connect to TunnelFlow"
+                )
             );
 
         fetchTunnels();
@@ -97,10 +102,10 @@ function App() {
 
             setTunnel(data);
 
-            // Reload active tunnels
+            // Refresh active tunnels
             await fetchTunnels();
 
-            // Clear input
+            // Clear port input
             setPort("");
 
         } catch (err) {
@@ -110,6 +115,48 @@ function App() {
         } finally {
 
             setLoading(false);
+        }
+    };
+
+    // Stop an active tunnel
+    const stopTunnel = async (tunnelId) => {
+
+        setError("");
+
+        try {
+
+            setStoppingTunnelId(tunnelId);
+
+            const response = await fetch(
+                `http://localhost:4040/api/tunnels/${tunnelId}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to stop tunnel"
+                );
+            }
+
+            // If the tunnel shown in the
+            // "Tunnel Created" section was stopped,
+            // remove that section too.
+            if (tunnel?.tunnelId === tunnelId) {
+                setTunnel(null);
+            }
+
+            // Refresh active tunnels
+            await fetchTunnels();
+
+        } catch (err) {
+
+            setError(err.message);
+
+        } finally {
+
+            setStoppingTunnelId(null);
         }
     };
 
@@ -138,6 +185,8 @@ function App() {
                 type="number"
                 placeholder="Enter local port"
                 value={port}
+                min="1"
+                max="65535"
                 onChange={(e) =>
                     setPort(e.target.value)
                 }
@@ -173,8 +222,7 @@ function App() {
 
                     <p>
                         Local:{" "}
-                        http://localhost:
-                        {tunnel.localPort}
+                        http://localhost:{tunnel.localPort}
                     </p>
 
                     <p>
@@ -217,6 +265,11 @@ function App() {
                         </p>
 
                         <p>
+                            Local URL:{" "}
+                            http://localhost:{item.localPort}
+                        </p>
+
+                        <p>
                             Public URL:{" "}
 
                             <a
@@ -226,8 +279,22 @@ function App() {
                             >
                                 {item.publicUrl}
                             </a>
-
                         </p>
+
+                        <button
+                            onClick={() =>
+                                stopTunnel(item.tunnelId)
+                            }
+                            disabled={
+                                stoppingTunnelId ===
+                                item.tunnelId
+                            }
+                        >
+                            {stoppingTunnelId ===
+                            item.tunnelId
+                                ? "Stopping..."
+                                : "Stop Tunnel"}
+                        </button>
 
                         <hr />
 

@@ -43,4 +43,16 @@ public class TunnelController {
     public Collection<TunnelRuntime> getActiveTunnels() {
         return tunnelRuntimeRegistry.getAll();
     }
+    @DeleteMapping("/{tunnelId}")
+    public Map<String, String> deleteTunnel(
+            @PathVariable String tunnelId
+    ) throws JsonProcessingException {
+
+        clientTunnelManager.deleteTunnel(tunnelId);
+
+        return Map.of(
+                "message", "Tunnel deleted successfully",
+                "tunnelId", tunnelId
+        );
+    }
 }

@@ -11,6 +11,7 @@ import org.tunnelflow.protocol.protocol.tunnel.TunnelCreatedResponse;
 @RequiredArgsConstructor
 public class ClientTunnelManager {
     private final TunnelConnectionManager tunnelConnectionManager;
+    private final TunnelDeletionService tunnelDeletionService;
 
     private final TunnelCreationService tunnelCreationService;
 
@@ -31,6 +32,22 @@ public class ClientTunnelManager {
 
         return runtime;
 
+    }
+    public void deleteTunnel(String tunnelId)
+            throws JsonProcessingException {
+
+        TunnelRuntime runtime =
+                tunnelRuntimeRegistry.get(tunnelId);
+
+        if (runtime == null) {
+            throw new IllegalArgumentException(
+                    "Tunnel not found: " + tunnelId
+            );
+        }
+
+        tunnelDeletionService.deleteTunnel(tunnelId);
+
+        tunnelRuntimeRegistry.remove(tunnelId);
     }
 
 }
