@@ -8,7 +8,7 @@ import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisteredResponse;
 import org.tunnelflow.protocol.protocol.tunnel.TunnelCreatedResponse;
-import org.tunnelflow.protocol.protocol.tunnel.TunnelDeleteResponse;
+import org.tunnelflow.protocol.protocol.tunnel.TunnelDeletedResponse;
 import java.util.UUID;
 
 @Service
@@ -50,8 +50,8 @@ public class TunnelProtocolService {
             String tunnelId
     ) throws JsonProcessingException {
 
-        TunnelDeleteResponse response =
-                TunnelDeleteResponse.builder()
+        TunnelDeletedResponse response =
+                TunnelDeletedResponse.builder()
                         .tunnelId(tunnelId)
                         .build();
 
