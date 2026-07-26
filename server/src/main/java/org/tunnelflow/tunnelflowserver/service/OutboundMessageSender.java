@@ -15,46 +15,29 @@ public class OutboundMessageSender {
     private final ObjectMapper objectMapper;
 
     public void start(ClientConnection connection) {
-
         Thread.startVirtualThread(() -> {
-
             while (true) {
-
                 try {
-
                     if (!connection.getSession().isOpen()) {
                         break;
                     }
-
                     TunnelMessage message =
                             connection.getOutboundQueue().take();
-
                     String json =
                             objectMapper.writeValueAsString(message);
-
                     connection.getSession().sendMessage(
                             new TextMessage(json)
                     );
-
                 }
                 catch (InterruptedException e) {
-
                     Thread.currentThread().interrupt();
                     break;
-
                 }
                 catch (Exception e) {
-
                     log.error("Failed sending websocket message", e);
-
                     break;
-
                 }
-
             }
-
         });
-
     }
-
 }

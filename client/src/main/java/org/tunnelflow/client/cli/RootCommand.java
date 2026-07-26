@@ -1,6 +1,7 @@
 package org.tunnelflow.client.cli;
 
 import org.springframework.stereotype.Component;
+import org.tunnelflow.client.cli.commands.StartCommand;
 import org.tunnelflow.client.cli.commands.VersionCommand;
 import org.tunnelflow.client.cli.commands.app.AppCommand;
 import org.tunnelflow.client.cli.commands.expose.ExposeCommand;
@@ -14,7 +15,8 @@ import picocli.CommandLine.Command;
         subcommands = {
                 VersionCommand.class,
                 AppCommand.class,
-                ExposeCommand.class
+                ExposeCommand.class,
+                StartCommand.class
         }
 )
 @Component

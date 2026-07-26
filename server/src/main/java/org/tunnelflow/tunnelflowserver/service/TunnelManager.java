@@ -73,6 +73,38 @@ public class TunnelManager {
                 .substring(0, 8);
 
     }
+    public boolean removeTunnel(String tunnelId, String clientId) {
+
+        TunnelInfo tunnel = tunnels.get(tunnelId);
+
+        if (tunnel == null) {
+            log.warn("Tunnel [{}] does not exist", tunnelId);
+            return false;
+        }
+
+        if (!tunnel.getClientId().equals(clientId)) {
+            log.warn(
+                    "Client [{}] attempted to delete tunnel [{}] owned by [{}]",
+                    clientId,
+                    tunnelId,
+                    tunnel.getClientId()
+            );
+
+            return false;
+        }
+
+        boolean removed = tunnels.remove(tunnelId, tunnel);
+
+        if (removed) {
+            log.info(
+                    "Tunnel [{}] removed for client [{}]",
+                    tunnelId,
+                    clientId
+            );
+        }
+
+        return removed;
+    }
     public void removeTunnelByClientId(String clientId) {
 
         tunnels.entrySet().removeIf(entry -> {
@@ -88,5 +120,6 @@ public class TunnelManager {
 
             return remove;
         });
+
     }
 }

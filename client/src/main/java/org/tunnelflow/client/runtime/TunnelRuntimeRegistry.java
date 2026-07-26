@@ -2,6 +2,8 @@ package org.tunnelflow.client.runtime;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,6 +32,9 @@ public class TunnelRuntimeRegistry {
 
         tunnels.remove(tunnelId);
 
+    }
+    public Collection<TunnelRuntime> getAll() {
+        return List.copyOf(tunnels.values());
     }
 
     public boolean contains(String tunnelId) {

@@ -15,7 +15,6 @@ import java.net.URI;
 public class TunnelWebSocketClient extends WebSocketClient {
 
     private final TunnelMessageReceiver receiver;
-    private final ClientRegistrationService registrationService;
     private final ObjectMapper objectMapper;
 
     public TunnelWebSocketClient(
@@ -26,7 +25,6 @@ public class TunnelWebSocketClient extends WebSocketClient {
     ) {
         super(serverUri);
         this.receiver = receiver;
-        this.registrationService = registrationService;
         this.objectMapper = objectMapper;
     }
 

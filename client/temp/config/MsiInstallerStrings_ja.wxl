@@ -1,0 +1,19 @@
+<?xml version="1.0" ?><ns0:WixLocalization xmlns:ns0="http://wixtoolset.org/schemas/v4/wxl" Culture="ja-jp" Codepage="932">
+  <ns0:String Value="主な機能" Id="MainFeatureTitle"></ns0:String>
+  <ns0:String Value="[ProductName]のより上位のバージョンがすでにインストールされています。ダウングレードは無効です。セットアップを終了します。" Id="DowngradeErrorMessage"></ns0:String>
+  <ns0:String Value="[ProductName]のより下位のバージョンがすでにインストールされています。アップグレードは無効です。セットアップを終了します。" Id="DisallowUpgradeErrorMessage"></ns0:String>
+
+  <ns0:String Value="[ProductName]セットアップ" Id="ShortcutPromptDlg_Title"></ns0:String>
+  <ns0:String Value="{\WixUI_Font_Title}ショートカット" Id="ShortcutPromptDlgTitle"></ns0:String>
+  <ns0:String Value="WixUI_Bmp_Banner" Id="ShortcutPromptDlgBannerBitmap"></ns0:String>
+  <ns0:String Value="作成するショートカットを選択します。" Id="ShortcutPromptDlgDescription"></ns0:String>
+  <ns0:String Value="デスクトップ・ショートカットの作成" Id="ShortcutPromptDlgDesktopShortcutControlLabel"></ns0:String>
+  <ns0:String Value="スタート・メニューのショートカットの作成" Id="ShortcutPromptDlgStartMenuShortcutControlLabel"></ns0:String>
+
+  <ns0:String Value="[ProductName]セットアップ" Id="InstallDirNotEmptyDlg_Title"></ns0:String>
+  <ns0:String Value="フォルダ[INSTALLDIR]はすでに存在します。そのフォルダにインストールしますか?" Id="InstallDirNotEmptyDlgInstallDirExistMessage"></ns0:String>
+
+  <ns0:String Value="[ProductName]で開く" Id="ContextMenuCommandLabel"></ns0:String>
+
+  <ns0:String Value="[ProductName][ProductVersion]は、 このバージョンのWindowsでサポートされていません" Id="OsConditionMessage"></ns0:String>
+</ns0:WixLocalization>

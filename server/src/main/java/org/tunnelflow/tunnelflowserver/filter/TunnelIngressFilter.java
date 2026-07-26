@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.tunnelflowserver.model.TunnelInfo;
@@ -22,7 +20,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +31,6 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
     private final PendingRequestManager pendingRequestManager;
     private final ClientManager clientManager;
     private final TunnelManager tunnelManager;
-    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(

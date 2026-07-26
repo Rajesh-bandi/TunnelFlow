@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<Wix xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR"></Property>
+    <?foreach WIXUIARCH in X86;X64;A64?>
+    <UI Id="JpUIInternal_$(WIXUIARCH)">
+      <ui:WixUI Id="WixUI_InstallDir" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"></ui:WixUI>
+    </UI>
+    <?endforeach?>
+    <UI Id="JpUI">
+      <ui:WixUI Id="JpUIInternal" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"></ui:WixUI>
+    </UI>
+    <UI Id="JpUIInternal">
+      <DialogRef Id="InstallDirNotEmptyDlg"></DialogRef>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="6" Condition="NOT Installed"></Publish>
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="6" Condition="NOT Installed"></Publish>
+    </UI>
+  </Fragment>
+</Wix>

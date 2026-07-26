@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.tunnelflow</groupId>
-    <artifactId>client</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>client</name>
-    <description>client</description>
+    <artifactId>tunnelflow-cli</artifactId>
+    <version>0.1.0</version>
+    <name>TunnelFlow CLI</name>
+    <description>Secure tunneling and local application orchestration.</description>
     <url/>
     <licenses>
         <license/>
@@ -30,6 +30,10 @@
         <java.version>21</java.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli-spring-boot-starter</artifactId>
@@ -73,6 +77,8 @@
     </dependencies>
 
     <build>
+
+        <finalName>tunnelflow</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

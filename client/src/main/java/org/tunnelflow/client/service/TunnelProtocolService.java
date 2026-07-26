@@ -7,7 +7,7 @@ import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.tunnel.CreateTunnelRequest;
-
+import org.tunnelflow.protocol.protocol.tunnel.DeleteTunnelRequest;
 
 @Service
 public class TunnelProtocolService {
@@ -50,6 +50,22 @@ public class TunnelProtocolService {
         return TunnelMessage.builder()
                 .requestId(requestId)
                 .type(MessageType.CREATE_TUNNEL)
+                .payload(objectMapper.writeValueAsString(request))
+                .build();
+    }
+    public TunnelMessage createDeleteTunnelMessage(
+            String requestId,
+            String tunnelId
+    ) throws JsonProcessingException {
+
+        DeleteTunnelRequest request =
+                DeleteTunnelRequest.builder()
+                        .tunnelId(tunnelId)
+                        .build();
+
+        return TunnelMessage.builder()
+                .requestId(requestId)
+                .type(MessageType.DELETE_TUNNEL)
                 .payload(objectMapper.writeValueAsString(request))
                 .build();
     }

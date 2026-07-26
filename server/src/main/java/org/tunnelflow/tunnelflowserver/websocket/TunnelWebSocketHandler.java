@@ -17,7 +17,7 @@ import org.tunnelflow.tunnelflowserver.service.*;
 
 import java.util.UUID;
 
-import static org.tunnelflow.protocol.protocol.MessageType.HTTP_RESPONSE;
+import org.tunnelflow.protocol.protocol.tunnel.DeleteTunnelRequest;
 
 @Slf4j
 @Component
@@ -135,6 +135,62 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                         new TextMessage(
                                 objectMapper.writeValueAsString(response)
                         )
+                );
+            }
+            case DELETE_TUNNEL -> {
+
+                DeleteTunnelRequest request =
+                        objectMapper.readValue(
+                                tunnelMessage.getPayload(),
+                                DeleteTunnelRequest.class
+                        );
+
+                String clientId =
+                        clientManager.getClientId(session);
+
+                if (clientId == null) {
+
+                    log.warn(
+                            "Unregistered client attempted to delete tunnel [{}]",
+                            request.getTunnelId()
+                    );
+
+                    break;
+                }
+
+                boolean deleted =
+                        tunnelManager.removeTunnel(
+                                request.getTunnelId(),
+                                clientId
+                        );
+
+                if (!deleted) {
+
+                    log.warn(
+                            "Failed to delete tunnel [{}] for client [{}]",
+                            request.getTunnelId(),
+                            clientId
+                    );
+
+                    break;
+                }
+
+                TunnelMessage response =
+                        tunnelProtocolService.createTunnelDeletedMessage(
+                                tunnelMessage.getRequestId(),
+                                request.getTunnelId()
+                        );
+
+                session.sendMessage(
+                        new TextMessage(
+                                objectMapper.writeValueAsString(response)
+                        )
+                );
+
+                log.info(
+                        "Tunnel [{}] deleted successfully for client [{}]",
+                        request.getTunnelId(),
+                        clientId
                 );
             }
 
