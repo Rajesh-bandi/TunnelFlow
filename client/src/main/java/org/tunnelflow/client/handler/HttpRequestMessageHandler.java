@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.tunnelflow.client.runtime.RequestLogRegistry;
 import org.tunnelflow.client.service.LocalHttpForwarder;
 import org.tunnelflow.client.service.TunnelProtocolService;
 import org.tunnelflow.client.service.TunnelSender;
@@ -11,7 +12,10 @@ import org.tunnelflow.protocol.http.HttpRequestMessage;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
+import org.tunnelflow.client.runtime.RequestLog;
+import org.tunnelflow.client.runtime.RequestLogRegistry;
 
+import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,7 +23,7 @@ import java.util.concurrent.Executors;
 @Slf4j
 @RequiredArgsConstructor
 public class HttpRequestMessageHandler implements MessageHandler {
-
+    private final RequestLogRegistry requestLogRegistry;
     private final ObjectMapper objectMapper;
     private final LocalHttpForwarder forwarder;
     private final TunnelProtocolService protocolService;
@@ -54,11 +58,32 @@ public class HttpRequestMessageHandler implements MessageHandler {
                         );
 
                 long afterForward = System.nanoTime();
+
                 log.info(
                         "[{}] Local forwarding took {} ms",
                         message.getRequestId(),
                         (afterForward - beforeForward) / 1_000_000
                 );
+                long durationMs =
+                        (afterForward - beforeForward) / 1_000_000;
+
+                RequestLog requestLog =
+                        RequestLog.builder()
+                                .requestId(message.getRequestId())
+                                .tunnelId(message.getTunnelId())
+                                .method(request.getMethod())
+                                .path(request.getPath())
+                                .query(request.getQuery())
+                                .status(response.getStatus())
+                                .durationMs(durationMs)
+                                .timestamp(Instant.now())
+                                .requestHeaders(request.getHeaders())
+                                .requestBody(request.getBody())
+                                .responseHeaders(response.getHeaders())
+                                .responseBody(response.getBody())
+                                .build();
+
+                requestLogRegistry.add(requestLog);
                 TunnelMessage tunnelMessage =
                         protocolService.createHttpResponseMessage(
                                 message.getRequestId(),

@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TunnelDeletedResponse {
-
     private String tunnelId;
 }

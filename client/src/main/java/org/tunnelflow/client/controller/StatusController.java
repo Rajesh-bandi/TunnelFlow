@@ -6,7 +6,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/status")
-@CrossOrigin(origins = "http://localhost:5173")
 public class StatusController {
 
     @GetMapping

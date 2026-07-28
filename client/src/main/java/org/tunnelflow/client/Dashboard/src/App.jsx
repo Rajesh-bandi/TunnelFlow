@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import RequestLogs from "./components/RequestLogs";
 function App() {
     const [status, setStatus] = useState(null);
     const [port, setPort] = useState("");
@@ -297,6 +297,8 @@ function App() {
                         </button>
 
                         <hr />
+
+                        <RequestLogs />
 
                     </div>
 

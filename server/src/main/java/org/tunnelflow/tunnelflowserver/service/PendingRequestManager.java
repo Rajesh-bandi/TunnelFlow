@@ -43,4 +43,14 @@ public class PendingRequestManager {
 
     }
 
+    /**
+     * Called on timeout — removes the future from the map so it can be GC'd.
+     */
+    public void cancel(String requestId) {
+        CompletableFuture<HttpResponseMessage> future = pendingRequests.remove(requestId);
+        if (future != null) {
+            future.cancel(false);
+        }
+    }
+
 }

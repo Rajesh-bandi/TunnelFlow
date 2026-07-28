@@ -15,7 +15,6 @@ import org.tunnelflow.tunnelflowserver.model.TunnelInfo;
 import org.tunnelflow.tunnelflowserver.service.*;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +39,8 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        byte[] body = request.getInputStream().readAllBytes();
+
+        // --- Early exits BEFORE reading the body (saves memory for non-tunnel traffic) ---
 
         if (path.startsWith("/ws")) {
             filterChain.doFilter(request, response);
@@ -59,29 +59,29 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
             return;
         }
 
+        // --- Only read the body once we know this is a real tunnel request ---
+        byte[] body = request.getInputStream().readAllBytes();
+
         String tunnelId = host.substring(
                 0,
                 host.indexOf(".tunnel.rajeshbandi.site")
         );
 
-        log.info("========================================================");
-        log.info("Incoming Tunnel Request");
-        log.info("Host      : {}", host);
-        log.info("Tunnel ID : {}", tunnelId);
-        log.info("Method    : {}", request.getMethod());
-        log.info("Path      : {}", request.getRequestURI());
-        log.info("Query     : {}", request.getQueryString());
-        log.info("Body Size : {}", body.length);
+        log.info("Incoming tunnel request | tunnelId={} method={} path={} bodyBytes={}",
+                tunnelId, request.getMethod(), request.getRequestURI(), body.length);
 
-        log.info("Request Headers:");
-        Collections.list(request.getHeaderNames()).forEach(name ->
-                log.info("{} = {}", name, Collections.list(request.getHeaders(name)))
-        );
+        // Debug-only: full headers (silent in production)
+        if (log.isDebugEnabled()) {
+            log.debug("Request headers for [{}]:", tunnelId);
+            java.util.Collections.list(request.getHeaderNames()).forEach(name ->
+                    log.debug("  {} = {}", name, java.util.Collections.list(request.getHeaders(name)))
+            );
+        }
 
         TunnelInfo tunnel = tunnelManager.getTunnel(tunnelId);
 
         if (tunnel == null) {
-            log.error("Tunnel [{}] not found", tunnelId);
+            log.warn("Tunnel [{}] not found", tunnelId);
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Tunnel not found.");
             return;
         }
@@ -93,7 +93,7 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                 || connection.getSession() == null
                 || !connection.getSession().isOpen()) {
 
-            log.error("Client [{}] is offline", tunnel.getClientId());
+            log.warn("Client [{}] is offline for tunnel [{}]", tunnel.getClientId(), tunnelId);
 
             response.sendError(
                     HttpServletResponse.SC_SERVICE_UNAVAILABLE,
@@ -115,20 +115,18 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                         tunnel.getTunnelId()
                 );
 
-        log.info("Queued HTTP_REQUEST [{}] for client [{}]",
-                requestId,
-                tunnel.getClientId());
-
+        log.debug("Queued HTTP_REQUEST [{}] for client [{}]", requestId, tunnel.getClientId());
 
         boolean queued = connection.getOutboundQueue().offer(message);
         if (!queued) {
-            log.error("Failed to enqueue message {}", requestId);
-
+            // Queue full — cancel the future immediately to avoid a leak
+            pendingRequestManager.cancel(requestId);
+            log.error("Outbound queue full for client [{}], dropping request [{}]",
+                    tunnel.getClientId(), requestId);
             response.sendError(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Failed to enqueue request."
+                    HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                    "Client is busy. Please retry."
             );
-
             return;
         }
 
@@ -136,39 +134,29 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
         try {
             tunnelResponse = future.get(30, TimeUnit.SECONDS);
-            log.info("Tunnel response received.");
-            log.info("Status = {}", tunnelResponse.getStatus());
-            log.info("Headers = {}", tunnelResponse.getHeaders());
-            log.info("Body size = {}",
+            log.info("Tunnel response received | requestId={} status={} bodyBytes={}",
+                    requestId,
+                    tunnelResponse.getStatus(),
                     tunnelResponse.getBody() == null ? 0 : tunnelResponse.getBody().length);
+
         } catch (TimeoutException e) {
+            // Cancel the future to remove it from the map — prevents leak
+            pendingRequestManager.cancel(requestId);
             log.error("Tunnel request [{}] timed out", requestId);
             response.sendError(
                     HttpServletResponse.SC_GATEWAY_TIMEOUT,
                     "Tunnel request timed out."
             );
             return;
+
         } catch (Exception e) {
-
-            log.error("Tunnel failed", e);
-
+            pendingRequestManager.cancel(requestId);
+            log.error("Tunnel request [{}] failed", requestId, e);
             response.sendError(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     e.getMessage()
             );
-
             return;
-        }
-
-        log.info("HTTP_RESPONSE [{}] received", requestId);
-        log.info("Status      : {}", tunnelResponse.getStatus());
-        log.info("Body Length : {}",
-                tunnelResponse.getBody() == null ? 0 : tunnelResponse.getBody().length);
-
-        log.info("Response Headers:");
-        if (tunnelResponse.getHeaders() != null) {
-            tunnelResponse.getHeaders().forEach((k, v) ->
-                    log.info("{} = {}", k, v));
         }
 
         response.setStatus(tunnelResponse.getStatus());
@@ -177,6 +165,7 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
             tunnelResponse.getHeaders().forEach((name, values) -> {
 
+                // Skip hop-by-hop headers — they must not be forwarded by proxies
                 if (name.equalsIgnoreCase("Transfer-Encoding")
                         || name.equalsIgnoreCase("Connection")
                         || name.equalsIgnoreCase("Keep-Alive")
@@ -185,29 +174,23 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                         || name.equalsIgnoreCase("Proxy-Authorization")
                         || name.equalsIgnoreCase("TE")
                         || name.equalsIgnoreCase("Trailer")) {
-                    log.info("Skipping hop-by-hop header: {}", name);
+                    log.debug("Skipping hop-by-hop header: {}", name);
                     return;
                 }
 
-                log.info("Copying Header: {} -> {}", name, values);
-
                 for (String value : values) {
-                    log.info("Adding header {} = {}", name, value);
                     response.addHeader(name, value);
                 }
 
             });
         }
 
-        if (tunnelResponse.getBody() != null) {
-            log.info("Writing {} bytes to response",
-                    tunnelResponse.getBody().length);
+        if (tunnelResponse.getBody() != null && tunnelResponse.getBody().length > 0) {
             response.getOutputStream().write(tunnelResponse.getBody());
         }
 
         response.getOutputStream().flush();
 
-        log.info("Tunnel request [{}] completed successfully", requestId);
-        log.info("========================================================");
+        log.debug("Tunnel request [{}] completed successfully", requestId);
     }
 }

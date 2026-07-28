@@ -15,6 +15,6 @@ public class ClientConnection {
     private final WebSocketSession session;
 
     private final BlockingQueue<TunnelMessage> outboundQueue =
-            new LinkedBlockingQueue<>();
+            new LinkedBlockingQueue<>(100); // bounded — prevents OOM when client is slow
 
 }

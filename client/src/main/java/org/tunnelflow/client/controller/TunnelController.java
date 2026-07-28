@@ -13,7 +13,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/tunnels")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class TunnelController {
 
     private final TunnelRuntimeRegistry tunnelRuntimeRegistry;
