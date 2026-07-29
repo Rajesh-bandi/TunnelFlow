@@ -22,17 +22,17 @@ jobs:
           java-version: '21'
           cache: maven
 
-      # Build protocol
+      # Build protocol module
       - name: Build Protocol
         working-directory: protocol
         run: mvn clean install -DskipTests
 
-      # Build server
+      # Build server module
       - name: Build Server
         working-directory: server
         run: mvn clean package -DskipTests
 
-      # Rename JAR before upload
+      # Rename artifact
       - name: Prepare Deployment Artifact
         run: |
           cp server/target/TunnelFlowServer-0.0.1-SNAPSHOT.jar \
@@ -48,31 +48,37 @@ jobs:
           source: "server/target/TunnelFlowServer.jar"
           target: "/home/ubuntu/apps/tunnelflow"
 
-      # Restart application
-      - name: Restart TunnelFlow
+      # Deploy
+      - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set +e
+            set -e
 
-            echo "Stopping old server..."
-
-            if pgrep -f TunnelFlowServer >/dev/null; then
-              pkill -f TunnelFlowServer
-              sleep 5
-            fi
-
-            echo "Moving uploaded JAR..."
+            echo "Removing uploaded directory..."
+            rm -f /home/ubuntu/apps/tunnelflow/TunnelFlowServer.jar
 
             mv /home/ubuntu/apps/tunnelflow/server/target/TunnelFlowServer.jar \
                /home/ubuntu/apps/tunnelflow/TunnelFlowServer.jar
 
             rm -rf /home/ubuntu/apps/tunnelflow/server
 
-            echo "Starting new server..."
+            echo "Checking for existing process..."
+
+            PID=$(pgrep -f "TunnelFlowServer.jar" || true)
+
+            if [ -n "$PID" ]; then
+              echo "Stopping PID $PID"
+              kill -15 "$PID"
+              sleep 5
+            else
+              echo "No running process found."
+            fi
+
+            echo "Starting server..."
 
             cd /home/ubuntu/apps/tunnelflow
 
@@ -81,9 +87,7 @@ jobs:
             sleep 10
 
             echo "Running process:"
-            pgrep -af TunnelFlowServer || true
+            pgrep -af "TunnelFlowServer.jar"
 
-            echo "Recent logs:"
-            tail -20 server.log || true
-
-            exit 0
+            echo "Logs:"
+            tail -20 server.log
