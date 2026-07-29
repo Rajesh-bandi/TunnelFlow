@@ -40,165 +40,179 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
-        TunnelMessage tunnelMessage =
-                objectMapper.readValue(message.getPayload(), TunnelMessage.class);
+        try {
 
-        switch (tunnelMessage.getType()) {
+            TunnelMessage tunnelMessage =
+                    objectMapper.readValue(message.getPayload(), TunnelMessage.class);
 
-            case PONG -> {
-                log.info("Received PONG [{}]", tunnelMessage.getRequestId());
-            }
+            switch (tunnelMessage.getType()) {
 
-            case HTTP_RESPONSE -> {
-
-                HttpResponseMessage response =
-                        objectMapper.readValue(
-                                tunnelMessage.getPayload(),
-                                HttpResponseMessage.class
-                        );
-
-                pendingRequestManager.complete(
-                        tunnelMessage.getRequestId(),
-                        response
-                );
-
-                log.info("HTTP Response received [{}]", tunnelMessage.getRequestId());
-            }
-            case CLIENT_REGISTER -> {
-
-                ClientRegisterRequest request =
-                        objectMapper.readValue(
-                                tunnelMessage.getPayload(),
-                                ClientRegisterRequest.class
-                        );
-
-                log.info("Client Registration Received");
-                log.info("Machine : {}", request.getMachineName());
-                log.info("OS      : {}", request.getOs());
-                log.info("Version : {}", request.getVersion());
-
-                String clientId = UUID.randomUUID().toString();
-                clientManager.register(clientId, session);
-                ClientConnection connection =
-                        clientManager.getConnection(clientId);
-
-                Thread senderThread = outboundMessageSender.start(connection);
-                connection.setSenderThread(senderThread);
-                TunnelMessage response =
-                        tunnelProtocolService.createClientRegisteredMessage(
-                                clientId
-                        );
-
-                session.sendMessage(
-                        new TextMessage(
-                                objectMapper.writeValueAsString(response)
-                        )
-                );
-
-                log.info("Client [{}] registered successfully", clientId);
-            }
-
-            case CREATE_TUNNEL -> {
-
-                CreateTunnelRequest request =
-                        objectMapper.readValue(
-                                tunnelMessage.getPayload(),
-                                CreateTunnelRequest.class
-                        );
-                String clientId = clientManager.getClientId(session);
-                if (clientId == null) {
-                    log.warn("Unregistered client attempted to create a tunnel.");
-                    break;
+                case PONG -> {
+                    log.info("Received PONG [{}]", tunnelMessage.getRequestId());
                 }
-                TunnelInfo tunnel =
-                        tunnelManager.createTunnel(
-                                clientId,
-                                request.getLocalPort()
-                        );
-                log.info(
-                        "Tunnel [{}] created for port {}",
-                        tunnel.getTunnelId(),
-                        request.getLocalPort()
-                );
-                String publicUrl =
-                        "https://" +
-                                tunnel.getTunnelId() +
-                                ".tunnel.rajeshbandi.site";
-                log.info("Public URL: {}", publicUrl);
-                TunnelMessage response =
-                        tunnelProtocolService.createTunnelCreatedMessage(
-                                tunnelMessage.getRequestId(),
-                                tunnel.getTunnelId(),
-                                publicUrl
-                        );
 
-                session.sendMessage(
-                        new TextMessage(
-                                objectMapper.writeValueAsString(response)
-                        )
-                );
-            }
-            case DELETE_TUNNEL -> {
+                case HTTP_RESPONSE -> {
 
-                DeleteTunnelRequest request =
-                        objectMapper.readValue(
-                                tunnelMessage.getPayload(),
-                                DeleteTunnelRequest.class
-                        );
+                    HttpResponseMessage response =
+                            objectMapper.readValue(
+                                    tunnelMessage.getPayload(),
+                                    HttpResponseMessage.class
+                            );
 
-                String clientId =
-                        clientManager.getClientId(session);
-
-                if (clientId == null) {
-
-                    log.warn(
-                            "Unregistered client attempted to delete tunnel [{}]",
-                            request.getTunnelId()
+                    pendingRequestManager.complete(
+                            tunnelMessage.getRequestId(),
+                            response
                     );
 
-                    break;
+                    log.info("HTTP Response received [{}]", tunnelMessage.getRequestId());
+                }
+                case CLIENT_REGISTER -> {
+
+                    ClientRegisterRequest request =
+                            objectMapper.readValue(
+                                    tunnelMessage.getPayload(),
+                                    ClientRegisterRequest.class
+                            );
+
+                    log.info("Client Registration Received");
+                    log.info("Machine : {}", request.getMachineName());
+                    log.info("OS      : {}", request.getOs());
+                    log.info("Version : {}", request.getVersion());
+
+                    String clientId = UUID.randomUUID().toString();
+                    clientManager.register(clientId, session);
+                    ClientConnection connection =
+                            clientManager.getConnection(clientId);
+
+                    Thread senderThread = outboundMessageSender.start(connection);
+                    connection.setSenderThread(senderThread);
+                    TunnelMessage response =
+                            tunnelProtocolService.createClientRegisteredMessage(
+                                    clientId
+                            );
+
+                    session.sendMessage(
+                            new TextMessage(
+                                    objectMapper.writeValueAsString(response)
+                            )
+                    );
+
+                    log.info("Client [{}] registered successfully", clientId);
                 }
 
-                boolean deleted =
-                        tunnelManager.removeTunnel(
+                case CREATE_TUNNEL -> {
+
+                    CreateTunnelRequest request =
+                            objectMapper.readValue(
+                                    tunnelMessage.getPayload(),
+                                    CreateTunnelRequest.class
+                            );
+                    String clientId = clientManager.getClientId(session);
+                    if (clientId == null) {
+                        log.warn("Unregistered client attempted to create a tunnel.");
+                        break;
+                    }
+                    TunnelInfo tunnel =
+                            tunnelManager.createTunnel(
+                                    clientId,
+                                    request.getLocalPort()
+                            );
+                    log.info(
+                            "Tunnel [{}] created for port {}",
+                            tunnel.getTunnelId(),
+                            request.getLocalPort()
+                    );
+                    String publicUrl =
+                            "https://" +
+                                    tunnel.getTunnelId() +
+                                    ".tunnel.rajeshbandi.site";
+                    log.info("Public URL: {}", publicUrl);
+                    TunnelMessage response =
+                            tunnelProtocolService.createTunnelCreatedMessage(
+                                    tunnelMessage.getRequestId(),
+                                    tunnel.getTunnelId(),
+                                    publicUrl
+                            );
+
+                    session.sendMessage(
+                            new TextMessage(
+                                    objectMapper.writeValueAsString(response)
+                            )
+                    );
+                }
+                case DELETE_TUNNEL -> {
+
+                    DeleteTunnelRequest request =
+                            objectMapper.readValue(
+                                    tunnelMessage.getPayload(),
+                                    DeleteTunnelRequest.class
+                            );
+
+                    String clientId =
+                            clientManager.getClientId(session);
+
+                    if (clientId == null) {
+
+                        log.warn(
+                                "Unregistered client attempted to delete tunnel [{}]",
+                                request.getTunnelId()
+                        );
+
+                        break;
+                    }
+
+                    boolean deleted =
+                            tunnelManager.removeTunnel(
+                                    request.getTunnelId(),
+                                    clientId
+                            );
+
+                    if (!deleted) {
+
+                        log.warn(
+                                "Failed to delete tunnel [{}] for client [{}]",
                                 request.getTunnelId(),
                                 clientId
                         );
 
-                if (!deleted) {
+                        break;
+                    }
 
-                    log.warn(
-                            "Failed to delete tunnel [{}] for client [{}]",
+                    TunnelMessage response =
+                            tunnelProtocolService.createTunnelDeletedMessage(
+                                    tunnelMessage.getRequestId(),
+                                    request.getTunnelId()
+                            );
+
+                    session.sendMessage(
+                            new TextMessage(
+                                    objectMapper.writeValueAsString(response)
+                            )
+                    );
+
+                    log.info(
+                            "Tunnel [{}] deleted successfully for client [{}]",
                             request.getTunnelId(),
                             clientId
                     );
-
-                    break;
                 }
 
-                TunnelMessage response =
-                        tunnelProtocolService.createTunnelDeletedMessage(
-                                tunnelMessage.getRequestId(),
-                                request.getTunnelId()
-                        );
-
-                session.sendMessage(
-                        new TextMessage(
-                                objectMapper.writeValueAsString(response)
-                        )
-                );
-
-                log.info(
-                        "Tunnel [{}] deleted successfully for client [{}]",
-                        request.getTunnelId(),
-                        clientId
-                );
+                default -> {
+                    log.warn("Unsupported message type: {}", tunnelMessage.getType());
+                }
             }
 
-            default -> {
-                log.warn("Unsupported message type: {}", tunnelMessage.getType());
-            }
+        } catch (Exception e) {
+            log.error("Error processing WebSocket message from session [{}]: {}",
+                    session.getId(), e.getMessage(), e);
+            // Do NOT rethrow — rethrowing would cause Spring to close the connection
         }
+    }
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        log.error("WebSocket transport error for session [{}]: {}",
+                session.getId(), exception.getMessage(), exception);
     }
     @Override
     public void afterConnectionClosed(WebSocketSession session,

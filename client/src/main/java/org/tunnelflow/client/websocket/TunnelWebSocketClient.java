@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.tunnelflow.client.service.ClientRegistrationService;
 import org.tunnelflow.client.service.TunnelMessageReceiver;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 
@@ -16,16 +15,18 @@ public class TunnelWebSocketClient extends WebSocketClient {
 
     private final TunnelMessageReceiver receiver;
     private final ObjectMapper objectMapper;
+    private final Runnable onDisconnect;
 
     public TunnelWebSocketClient(
             URI serverUri,
             TunnelMessageReceiver receiver,
-            ClientRegistrationService registrationService,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            Runnable onDisconnect
     ) {
         super(serverUri);
         this.receiver = receiver;
         this.objectMapper = objectMapper;
+        this.onDisconnect = onDisconnect;
     }
 
     @Override
@@ -41,7 +42,12 @@ public class TunnelWebSocketClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        log.info("Connection closed. Code: {}, Reason: {}", code, reason);
+        log.warn("Connection closed. Code: {}, Reason: {}, Remote: {}", code, reason, remote);
+
+        if (remote && onDisconnect != null) {
+            // Server/network killed the connection — trigger reconnection on a separate thread
+            Thread.startVirtualThread(onDisconnect);
+        }
     }
 
     @Override
@@ -49,7 +55,12 @@ public class TunnelWebSocketClient extends WebSocketClient {
         log.error("WebSocket Error", ex);
     }
 
-    public void send(TunnelMessage message) {
+    /**
+     * Synchronized to prevent concurrent WebSocket frame writes from
+     * multiple threads (e.g. the HTTP forwarding thread pool).
+     * Concurrent writes corrupt WebSocket frames and cause code 1006 disconnects.
+     */
+    public synchronized void send(TunnelMessage message) {
 
         try {
 
