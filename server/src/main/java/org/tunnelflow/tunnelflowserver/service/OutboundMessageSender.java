@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -14,15 +16,13 @@ public class OutboundMessageSender {
 
     private final ObjectMapper objectMapper;
 
-    public void start(ClientConnection connection) {
-        Thread.startVirtualThread(() -> {
-            while (true) {
+    public Thread start(ClientConnection connection) {
+        Thread senderThread = Thread.startVirtualThread(() -> {
+            while (connection.getSession().isOpen()) {
                 try {
-                    if (!connection.getSession().isOpen()) {
-                        break;
-                    }
                     TunnelMessage message =
-                            connection.getOutboundQueue().take();
+                            connection.getOutboundQueue().poll(5, TimeUnit.SECONDS);
+                    if (message == null) continue;
                     String json =
                             objectMapper.writeValueAsString(message);
                     connection.getSession().sendMessage(
@@ -38,6 +38,9 @@ public class OutboundMessageSender {
                     break;
                 }
             }
+            log.info("Outbound sender thread exiting for session [{}]",
+                    connection.getSession().getId());
         });
+        return senderThread;
     }
 }

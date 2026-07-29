@@ -15,12 +15,11 @@ public class TunnelMessageReceiver {
     private final ObjectMapper objectMapper;
     private final TunnelMessageDispatcher dispatcher;
     public void receive(String json) {
-        TunnelMessage message = null;
         try {
-            message = objectMapper.readValue(json, TunnelMessage.class);
+            TunnelMessage message = objectMapper.readValue(json, TunnelMessage.class);
+            dispatcher.dispatch(message);
         } catch (JsonProcessingException e) {
             log.error("Failed to deserialize TunnelMessage.", e);
         }
-        dispatcher.dispatch(message);
     }
 }

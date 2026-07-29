@@ -29,6 +29,7 @@ public class TunnelMessageDispatcher {
 
         if(handler == null){
             log.error("No handler for message type {}", message.getType());
+            return;
         }
 
         try {

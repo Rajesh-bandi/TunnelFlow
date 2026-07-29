@@ -13,7 +13,6 @@ import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.MessageType;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.client.runtime.RequestLog;
-import org.tunnelflow.client.runtime.RequestLogRegistry;
 
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
@@ -105,6 +104,19 @@ public class HttpRequestMessageHandler implements MessageHandler {
                         message.getRequestId(),
                         e
                 );
+
+                try {
+                    HttpResponseMessage errorResponse = HttpResponseMessage.builder()
+                            .status(502)
+                            .body(("Local forwarding failed: " + e.getMessage()).getBytes())
+                            .build();
+                    TunnelMessage errorMsg = protocolService.createHttpResponseMessage(
+                            message.getRequestId(), errorResponse);
+                    tunnelSender.send(errorMsg);
+                } catch (Exception ex) {
+                    log.error("Failed to send error response for [{}]",
+                            message.getRequestId(), ex);
+                }
 
             }
 

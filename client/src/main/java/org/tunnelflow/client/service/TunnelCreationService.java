@@ -10,6 +10,7 @@ import org.tunnelflow.protocol.protocol.tunnel.TunnelCreatedResponse;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -37,7 +38,7 @@ public class TunnelCreationService {
 
         try {
 
-            TunnelCreatedResponse response = future.get();
+            TunnelCreatedResponse response = future.get(30, TimeUnit.SECONDS);
 
             return response;
 

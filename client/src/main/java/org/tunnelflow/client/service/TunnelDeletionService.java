@@ -9,6 +9,7 @@ import org.tunnelflow.protocol.protocol.tunnel.TunnelDeletedResponse;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +50,7 @@ public class TunnelDeletionService {
 
         try {
 
-            return future.get();
+            return future.get(30, TimeUnit.SECONDS);
 
         } catch (Exception e) {
 

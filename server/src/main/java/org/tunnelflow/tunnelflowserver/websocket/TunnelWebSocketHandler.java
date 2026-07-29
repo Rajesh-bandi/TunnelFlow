@@ -82,7 +82,8 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                 ClientConnection connection =
                         clientManager.getConnection(clientId);
 
-                outboundMessageSender.start(connection);
+                Thread senderThread = outboundMessageSender.start(connection);
+                connection.setSenderThread(senderThread);
                 TunnelMessage response =
                         tunnelProtocolService.createClientRegisteredMessage(
                                 clientId
@@ -209,9 +210,11 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
         String clientId = clientManager.getClientId(session);
 
         if (clientId != null) {
-
+            ClientConnection connection = clientManager.getConnection(clientId);
+            if (connection != null) {
+                connection.shutdown();
+            }
             tunnelManager.removeTunnelByClientId(clientId);
-
             clientManager.unregister(session);
         }
 

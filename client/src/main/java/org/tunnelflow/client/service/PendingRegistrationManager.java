@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class PendingRegistrationManager {
 
-    private CompletableFuture<String> registrationFuture;
+    private volatile CompletableFuture<String> registrationFuture;
 
     public CompletableFuture<String> register() {
 
