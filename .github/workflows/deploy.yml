@@ -14,35 +14,41 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Install Java
+      # Setup Java
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: '21'
           cache: maven
 
-      # Build Protocol Module
+      # Build protocol
       - name: Build Protocol
         working-directory: protocol
         run: mvn clean install -DskipTests
 
-      # Build Server Module
+      # Build server
       - name: Build Server
         working-directory: server
         run: mvn clean package -DskipTests
 
-      # Copy JAR to EC2
-      - name: Copy JAR to EC2
+      # Rename JAR before upload
+      - name: Prepare Deployment Artifact
+        run: |
+          cp server/target/TunnelFlowServer-0.0.1-SNAPSHOT.jar \
+             server/target/TunnelFlowServer.jar
+
+      # Upload JAR
+      - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "server/target/TunnelFlowServer-0.0.1-SNAPSHOT.jar"
+          source: "server/target/TunnelFlowServer.jar"
           target: "/home/ubuntu/apps/tunnelflow"
 
-      # Restart Server
+      # Restart application
       - name: Restart TunnelFlow
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -50,25 +56,34 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "Stopping old server..."
-            pkill -f TunnelFlowServer || true
-            sleep 3
+            set +e
 
-            echo "Moving new JAR..."
-            mv /home/ubuntu/apps/tunnelflow/server/target/TunnelFlowServer-0.0.1-SNAPSHOT.jar \
+            echo "Stopping old server..."
+
+            if pgrep -f TunnelFlowServer >/dev/null; then
+              pkill -f TunnelFlowServer
+              sleep 5
+            fi
+
+            echo "Moving uploaded JAR..."
+
+            mv /home/ubuntu/apps/tunnelflow/server/target/TunnelFlowServer.jar \
                /home/ubuntu/apps/tunnelflow/TunnelFlowServer.jar
 
             rm -rf /home/ubuntu/apps/tunnelflow/server
 
             echo "Starting new server..."
+
             cd /home/ubuntu/apps/tunnelflow
 
-            nohup java -jar TunnelFlowServer.jar > server.log 2>&1 &
+            nohup java -jar TunnelFlowServer.jar > server.log 2>&1 < /dev/null &
 
             sleep 10
 
-            echo "Running Processes:"
-            ps -ef | grep TunnelFlowServer || true
+            echo "Running process:"
+            pgrep -af TunnelFlowServer || true
 
-            echo "Last 20 Log Lines:"
+            echo "Recent logs:"
             tail -20 server.log || true
+
+            exit 0
