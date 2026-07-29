@@ -28,7 +28,10 @@ public class HttpRequestMessageHandler implements MessageHandler {
     private final TunnelProtocolService protocolService;
     private final TunnelSender tunnelSender;
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(10);
+    // Virtual threads (Java 21) — unlimited concurrency with near-zero overhead.
+    // Each incoming HTTP request gets its own lightweight thread instantly,
+    // so a React app's 20-50 concurrent requests are all forwarded in parallel.
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     @Override
     public MessageType getSupportedType() {
