@@ -1,6 +1,5 @@
 package org.tunnelflow.tunnelflowserver.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,13 +39,13 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // --- Early exits BEFORE reading the body (saves memory for non-tunnel traffic) ---
-
+        // Allow WebSocket requests
         if (path.startsWith("/ws")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Allow Spring error handling
         if (path.startsWith("/error")) {
             filterChain.doFilter(request, response);
             return;
@@ -54,35 +53,47 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
         String host = request.getServerName();
 
-        if (!host.endsWith(".tunnel.rajeshbandi.site")) {
+        // Only intercept tunnel requests
+        if (!host.endsWith(".tunnelflow.rajeshbandi.site")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // --- Only read the body once we know this is a real tunnel request ---
         byte[] body = request.getInputStream().readAllBytes();
 
         String tunnelId = host.substring(
                 0,
-                host.indexOf(".tunnel.rajeshbandi.site")
+                host.indexOf(".tunnelflow.rajeshbandi.site")
         );
 
-        log.info("Incoming tunnel request | tunnelId={} method={} path={} bodyBytes={}",
-                tunnelId, request.getMethod(), request.getRequestURI(), body.length);
+        log.info(
+                "Incoming tunnel request | tunnelId={} method={} path={} bodyBytes={}",
+                tunnelId,
+                request.getMethod(),
+                request.getRequestURI(),
+                body.length
+        );
 
-        // Debug-only: full headers (silent in production)
         if (log.isDebugEnabled()) {
             log.debug("Request headers for [{}]:", tunnelId);
-            java.util.Collections.list(request.getHeaderNames()).forEach(name ->
-                    log.debug("  {} = {}", name, java.util.Collections.list(request.getHeaders(name)))
-            );
+            java.util.Collections.list(request.getHeaderNames())
+                    .forEach(name ->
+                            log.debug(
+                                    "  {} = {}",
+                                    name,
+                                    java.util.Collections.list(request.getHeaders(name))
+                            )
+                    );
         }
 
         TunnelInfo tunnel = tunnelManager.getTunnel(tunnelId);
 
         if (tunnel == null) {
             log.warn("Tunnel [{}] not found", tunnelId);
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Tunnel not found.");
+            response.sendError(
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Tunnel not found."
+            );
             return;
         }
 
@@ -93,7 +104,11 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                 || connection.getSession() == null
                 || !connection.getSession().isOpen()) {
 
-            log.warn("Client [{}] is offline for tunnel [{}]", tunnel.getClientId(), tunnelId);
+            log.warn(
+                    "Client [{}] is offline for tunnel [{}]",
+                    tunnel.getClientId(),
+                    tunnelId
+            );
 
             response.sendError(
                     HttpServletResponse.SC_SERVICE_UNAVAILABLE,
@@ -115,47 +130,71 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                         tunnel.getTunnelId()
                 );
 
-        log.debug("Queued HTTP_REQUEST [{}] for client [{}]", requestId, tunnel.getClientId());
+        log.debug(
+                "Queued HTTP_REQUEST [{}] for client [{}]",
+                requestId,
+                tunnel.getClientId()
+        );
 
         boolean queued = connection.getOutboundQueue().offer(message);
+
         if (!queued) {
-            // Queue full — cancel the future immediately to avoid a leak
+
             pendingRequestManager.cancel(requestId);
-            log.error("Outbound queue full for client [{}], dropping request [{}]",
-                    tunnel.getClientId(), requestId);
+
+            log.error(
+                    "Outbound queue full for client [{}], dropping request [{}]",
+                    tunnel.getClientId(),
+                    requestId
+            );
+
             response.sendError(
                     HttpServletResponse.SC_SERVICE_UNAVAILABLE,
                     "Client is busy. Please retry."
             );
+
             return;
         }
 
         HttpResponseMessage tunnelResponse;
 
         try {
+
             tunnelResponse = future.get(30, TimeUnit.SECONDS);
-            log.info("Tunnel response received | requestId={} status={} bodyBytes={}",
+
+            log.info(
+                    "Tunnel response received | requestId={} status={} bodyBytes={}",
                     requestId,
                     tunnelResponse.getStatus(),
-                    tunnelResponse.getBody() == null ? 0 : tunnelResponse.getBody().length);
+                    tunnelResponse.getBody() == null
+                            ? 0
+                            : tunnelResponse.getBody().length
+            );
 
         } catch (TimeoutException e) {
-            // Cancel the future to remove it from the map — prevents leak
+
             pendingRequestManager.cancel(requestId);
+
             log.error("Tunnel request [{}] timed out", requestId);
+
             response.sendError(
                     HttpServletResponse.SC_GATEWAY_TIMEOUT,
                     "Tunnel request timed out."
             );
+
             return;
 
         } catch (Exception e) {
+
             pendingRequestManager.cancel(requestId);
+
             log.error("Tunnel request [{}] failed", requestId, e);
+
             response.sendError(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     e.getMessage()
             );
+
             return;
         }
 
@@ -165,7 +204,6 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
             tunnelResponse.getHeaders().forEach((name, values) -> {
 
-                // Skip hop-by-hop headers — they must not be forwarded by proxies
                 if (name.equalsIgnoreCase("Transfer-Encoding")
                         || name.equalsIgnoreCase("Connection")
                         || name.equalsIgnoreCase("Keep-Alive")
@@ -185,8 +223,11 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
             });
         }
 
-        if (tunnelResponse.getBody() != null && tunnelResponse.getBody().length > 0) {
+        if (tunnelResponse.getBody() != null
+                && tunnelResponse.getBody().length > 0) {
+
             response.getOutputStream().write(tunnelResponse.getBody());
+
         }
 
         response.getOutputStream().flush();
