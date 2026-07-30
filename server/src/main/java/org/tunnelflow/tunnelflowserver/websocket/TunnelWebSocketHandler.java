@@ -149,7 +149,7 @@ public class TunnelWebSocketHandler extends AbstractWebSocketHandler {
                     String publicUrl =
                             "https://" +
                                     tunnel.getTunnelId() +
-                                    ".tunnel.rajeshbandi.site";
+                                    ".tunnelflow.rajeshbandi.site";
                     log.info("Public URL: {}", publicUrl);
                     TunnelMessage response =
                             tunnelProtocolService.createTunnelCreatedMessage(
