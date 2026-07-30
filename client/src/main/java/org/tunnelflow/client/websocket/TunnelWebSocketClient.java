@@ -9,6 +9,7 @@ import org.tunnelflow.client.service.TunnelMessageReceiver;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 
 import java.net.URI;
+import java.nio.ByteBuffer;
 
 @Slf4j
 public class TunnelWebSocketClient extends WebSocketClient {
@@ -41,6 +42,13 @@ public class TunnelWebSocketClient extends WebSocketClient {
     }
 
     @Override
+    public void onMessage(ByteBuffer bytes) {
+        byte[] array = new byte[bytes.remaining()];
+        bytes.get(array);
+        receiver.receiveBinary(array);
+    }
+
+    @Override
     public void onClose(int code, String reason, boolean remote) {
         log.warn("Connection closed. Code: {}, Reason: {}, Remote: {}", code, reason, remote);
 
@@ -60,17 +68,20 @@ public class TunnelWebSocketClient extends WebSocketClient {
      * multiple threads (e.g. the HTTP forwarding thread pool).
      * Concurrent writes corrupt WebSocket frames and cause code 1006 disconnects.
      */
-    public synchronized void send(TunnelMessage message) {
-
+    public void send(TunnelMessage message) {
         try {
-
-            super.send(objectMapper.writeValueAsString(message));
-
+            String json = objectMapper.writeValueAsString(message);
+            synchronized (this) {
+                super.send(json);
+            }
         } catch (JsonProcessingException e) {
-
             throw new RuntimeException("Failed to serialize TunnelMessage", e);
-
         }
+    }
 
+    public void sendBinary(byte[] bytes) {
+        synchronized (this) {
+            super.send(bytes);
+        }
     }
 }

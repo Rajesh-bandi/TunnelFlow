@@ -21,7 +21,7 @@ public class StartCommand implements Runnable {
     private final BrowserLauncher browserLauncher;
 
 
-    
+
     @Override
     public void run() {
         connectionManager.connect();

@@ -8,13 +8,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.socket.BinaryMessage;
+import org.tunnelflow.protocol.binary.BinaryMessageCodec;
+import org.tunnelflow.protocol.binary.HttpRequestBinaryHeader;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
-import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.tunnelflowserver.model.TunnelInfo;
 import org.tunnelflow.tunnelflowserver.service.*;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -24,8 +26,6 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class TunnelIngressFilter extends OncePerRequestFilter {
 
-    private final TunnelProtocolService tunnelProtocolService;
-    private final HttpRequestMapper httpRequestMapper;
     private final PendingRequestManager pendingRequestManager;
     private final ClientManager clientManager;
     private final TunnelManager tunnelManager;
@@ -66,25 +66,13 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
                 host.indexOf(".tunnelflow.rajeshbandi.site")
         );
 
-        log.info(
+        log.debug(
                 "Incoming tunnel request | tunnelId={} method={} path={} bodyBytes={}",
                 tunnelId,
                 request.getMethod(),
                 request.getRequestURI(),
                 body.length
         );
-
-        if (log.isDebugEnabled()) {
-            log.debug("Request headers for [{}]:", tunnelId);
-            java.util.Collections.list(request.getHeaderNames())
-                    .forEach(name ->
-                            log.debug(
-                                    "  {} = {}",
-                                    name,
-                                    java.util.Collections.list(request.getHeaders(name))
-                            )
-                    );
-        }
 
         TunnelInfo tunnel = tunnelManager.getTunnel(tunnelId);
 
@@ -123,20 +111,32 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
         CompletableFuture<HttpResponseMessage> future =
                 pendingRequestManager.register(requestId);
 
-        TunnelMessage message =
-                tunnelProtocolService.createHttpRequestTunnelMessage(
-                        httpRequestMapper.map(request, body),
-                        requestId,
-                        tunnel.getTunnelId()
-                );
-
-        log.debug(
-                "Queued HTTP_REQUEST [{}] for client [{}]",
-                requestId,
-                tunnel.getClientId()
+        Map<String, List<String>> headersMap = new HashMap<>();
+        Collections.list(request.getHeaderNames()).forEach(name ->
+                headersMap.put(name, Collections.list(request.getHeaders(name)))
         );
 
-        boolean queued = connection.getOutboundQueue().offer(message);
+        HttpRequestBinaryHeader binaryHeader = HttpRequestBinaryHeader.builder()
+                .requestId(requestId)
+                .tunnelId(tunnel.getTunnelId())
+                .method(request.getMethod())
+                .path(request.getRequestURI())
+                .query(request.getQueryString())
+                .headers(headersMap)
+                .build();
+
+        BinaryMessage binaryMessage;
+        try {
+            byte[] binaryFrame = BinaryMessageCodec.encode(binaryHeader, body);
+            binaryMessage = new BinaryMessage(binaryFrame);
+        } catch (Exception e) {
+            pendingRequestManager.cancel(requestId);
+            log.error("Failed to encode binary request for [{}]", requestId, e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Encoding error.");
+            return;
+        }
+
+        boolean queued = connection.getOutboundQueue().offer(binaryMessage);
 
         if (!queued) {
 
@@ -162,7 +162,7 @@ public class TunnelIngressFilter extends OncePerRequestFilter {
 
             tunnelResponse = future.get(30, TimeUnit.SECONDS);
 
-            log.info(
+            log.debug(
                     "Tunnel response received | requestId={} status={} bodyBytes={}",
                     requestId,
                     tunnelResponse.getStatus(),

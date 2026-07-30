@@ -33,4 +33,14 @@ public class TunnelSender {
 
         client.send(message);
     }
+
+    public void sendBinary(byte[] bytes) {
+
+        if (!isConnected()) {
+            log.warn("Tunnel not connected. Dropping binary payload");
+            return;
+        }
+
+        client.sendBinary(bytes);
+    }
 }

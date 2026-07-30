@@ -4,37 +4,63 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.socket.handler.AbstractWebSocketHandler;
+import org.tunnelflow.protocol.binary.BinaryMessageCodec;
+import org.tunnelflow.protocol.binary.HttpResponseBinaryHeader;
 import org.tunnelflow.protocol.http.HttpResponseMessage;
 import org.tunnelflow.protocol.protocol.TunnelMessage;
 import org.tunnelflow.protocol.protocol.client.ClientRegisterRequest;
 import org.tunnelflow.protocol.protocol.tunnel.CreateTunnelRequest;
+import org.tunnelflow.protocol.protocol.tunnel.DeleteTunnelRequest;
 import org.tunnelflow.tunnelflowserver.model.TunnelInfo;
 import org.tunnelflow.tunnelflowserver.service.*;
 
+import java.nio.ByteBuffer;
 import java.util.UUID;
-
-import org.tunnelflow.protocol.protocol.tunnel.DeleteTunnelRequest;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TunnelWebSocketHandler extends TextWebSocketHandler {
+public class TunnelWebSocketHandler extends AbstractWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final TunnelManager tunnelManager;
     private final ClientManager clientManager;
     private final TunnelProtocolService tunnelProtocolService;
     private final PendingRequestManager pendingRequestManager;
     private final OutboundMessageSender outboundMessageSender;
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        log.info("WebSocket connected [{}], waiting for registration...", session.getId());
+    }
 
-        log.info("WebSocket connected [{}], waiting for registration...",
-                session.getId());
+    @Override
+    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
+        try {
+            ByteBuffer payload = message.getPayload();
+            byte[] binaryData = new byte[payload.remaining()];
+            payload.get(binaryData);
 
+            BinaryMessageCodec.BinaryDecodedMessage<HttpResponseBinaryHeader> decoded =
+                    BinaryMessageCodec.decode(binaryData, HttpResponseBinaryHeader.class);
+
+            HttpResponseBinaryHeader header = decoded.getHeader();
+            HttpResponseMessage response = HttpResponseMessage.builder()
+                    .status(header.getStatus())
+                    .headers(header.getHeaders())
+                    .body(decoded.getBody())
+                    .build();
+
+            pendingRequestManager.complete(header.getRequestId(), response);
+            log.debug("Binary HTTP Response received [{}]", header.getRequestId());
+        } catch (Exception e) {
+            log.error("Error processing binary WebSocket message from session [{}]: {}",
+                    session.getId(), e.getMessage(), e);
+        }
     }
 
     @Override
@@ -91,10 +117,8 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                                     clientId
                             );
 
-                    session.sendMessage(
-                            new TextMessage(
-                                    objectMapper.writeValueAsString(response)
-                            )
+                    connection.getOutboundQueue().offer(
+                            new TextMessage(objectMapper.writeValueAsString(response))
                     );
 
                     log.info("Client [{}] registered successfully", clientId);
@@ -125,7 +149,7 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                     String publicUrl =
                             "https://" +
                                     tunnel.getTunnelId() +
-                                    ".tunnelflow.rajeshbandi.site";
+                                    ".tunnel.rajeshbandi.site";
                     log.info("Public URL: {}", publicUrl);
                     TunnelMessage response =
                             tunnelProtocolService.createTunnelCreatedMessage(
@@ -134,11 +158,12 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                                     publicUrl
                             );
 
-                    session.sendMessage(
-                            new TextMessage(
-                                    objectMapper.writeValueAsString(response)
-                            )
-                    );
+                    ClientConnection connection = clientManager.getConnection(clientId);
+                    if (connection != null) {
+                        connection.getOutboundQueue().offer(
+                                new TextMessage(objectMapper.writeValueAsString(response))
+                        );
+                    }
                 }
                 case DELETE_TUNNEL -> {
 
@@ -184,11 +209,12 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
                                     request.getTunnelId()
                             );
 
-                    session.sendMessage(
-                            new TextMessage(
-                                    objectMapper.writeValueAsString(response)
-                            )
-                    );
+                    ClientConnection connection = clientManager.getConnection(clientId);
+                    if (connection != null) {
+                        connection.getOutboundQueue().offer(
+                                new TextMessage(objectMapper.writeValueAsString(response))
+                        );
+                    }
 
                     log.info(
                             "Tunnel [{}] deleted successfully for client [{}]",
@@ -214,6 +240,7 @@ public class TunnelWebSocketHandler extends TextWebSocketHandler {
         log.error("WebSocket transport error for session [{}]: {}",
                 session.getId(), exception.getMessage(), exception);
     }
+
     @Override
     public void afterConnectionClosed(WebSocketSession session,
                                       CloseStatus status)

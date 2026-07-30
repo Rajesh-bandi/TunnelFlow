@@ -1,11 +1,9 @@
 package org.tunnelflow.tunnelflowserver.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.TextMessage;
-import org.tunnelflow.protocol.protocol.TunnelMessage;
+import org.springframework.web.socket.WebSocketMessage;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,20 +12,15 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class OutboundMessageSender {
 
-    private final ObjectMapper objectMapper;
-
     public Thread start(ClientConnection connection) {
         Thread senderThread = Thread.startVirtualThread(() -> {
             while (connection.getSession().isOpen()) {
                 try {
-                    TunnelMessage message =
+                    WebSocketMessage<?> message =
                             connection.getOutboundQueue().poll(5, TimeUnit.SECONDS);
                     if (message == null) continue;
-                    String json =
-                            objectMapper.writeValueAsString(message);
-                    connection.getSession().sendMessage(
-                            new TextMessage(json)
-                    );
+
+                    connection.getSession().sendMessage(message);
                 }
                 catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

@@ -66,13 +66,13 @@ public class LocalHttpForwarder {
             targetUrl.append("?").append(request.getQuery());
         }
 
-        log.info("==================================================");
-        log.info("Forwarding Local HTTP Request");
-        log.info("Method      : {}", request.getMethod());
-        log.info("Target URL  : {}", targetUrl);
-        log.info("Query       : {}", request.getQuery());
-        log.info("Body Length : {}",
-                request.getBody() == null ? 0 : request.getBody().length);
+        if (log.isDebugEnabled()) {
+            log.debug("Forwarding Local HTTP Request: {} {} (Query: {}, Body: {}b)",
+                    request.getMethod(), targetUrl, request.getQuery(),
+                    request.getBody() == null ? 0 : request.getBody().length);
+        } else {
+            log.info("Forwarding {} {}", request.getMethod(), path);
+        }
 
         HttpRequest.Builder builder =
                 HttpRequest.newBuilder()
@@ -81,11 +81,11 @@ public class LocalHttpForwarder {
         // Forward all headers except hop-by-hop headers
         if (request.getHeaders() != null) {
 
-            log.info("Incoming Headers:");
-
             request.getHeaders().forEach((key, values) -> {
 
-                log.info("{} = {}", key, values);
+                if (log.isDebugEnabled()) {
+                    log.debug("  Header: {} = {}", key, values);
+                }
 
                 if (HOP_BY_HOP_HEADERS.contains(key.toLowerCase())) {
                     return;
@@ -123,14 +123,9 @@ public class LocalHttpForwarder {
                         HttpResponse.BodyHandlers.ofByteArray()
                 );
 
-        log.info("--------------- Local Response ----------------");
-        log.info("Status      : {}", response.statusCode());
-
-        response.headers().map().forEach((k, v) ->
-                log.info("{} = {}", k, v));
-
-        log.info("Body Length : {}", response.body().length);
-        log.info("==================================================");
+        if (log.isDebugEnabled()) {
+            log.debug("Local Response Status: {} (Body: {}b)", response.statusCode(), response.body().length);
+        }
 
         return HttpResponseMessage.builder()
                 .status(response.statusCode())
