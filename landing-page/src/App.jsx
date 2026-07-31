@@ -18,6 +18,7 @@ import {
   PlusCircleIcon,
 } from "./components/Icons";
 import { MediaViewer, CarouselViewer } from "./components/MediaViewer";
+import { AnimatedBackground } from "./components/AnimatedBackground";
 
 export default function App() {
   const [activeInstallTab, setActiveInstallTab] = useState("msi");
@@ -57,19 +58,8 @@ export default function App() {
 
   return (
     <div className="landing-page-container">
-      {/* ── PARALLAX BACKGROUND LAYERS ── */}
-      <div
-        className="parallax-bg-layer parallax-bg-orb1"
-        style={{ transform: `translate3d(0, ${Math.max(-180, scrollY * -0.04)}px, 0)` }}
-      />
-      <div
-        className="parallax-bg-layer parallax-bg-orb2"
-        style={{ transform: `translate3d(0, ${Math.max(-220, scrollY * -0.06)}px, 0)` }}
-      />
-      <div
-        className="parallax-bg-layer parallax-bg-grid"
-        style={{ transform: `translate3d(0, ${Math.max(-100, scrollY * -0.02)}px, 0)` }}
-      />
+      {/* ── DYNAMIC ANIMATED BACKGROUND & PARTICLE CONSTELLATION ── */}
+      <AnimatedBackground theme={theme} />
 
       {/* ── LANDING NAVBAR ── */}
       <header className="landing-navbar">
