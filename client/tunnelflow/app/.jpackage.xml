@@ -1,5 +1,0 @@
-<?xml version="1.0" ?>
-<jpackage-state version="25.0.2" platform="windows">
-  <app-version>0.1.0</app-version>
-  <main-launcher>tunnelflow</main-launcher>
-  <main-class>org.springframework.boot.loader.launch.JarLauncher</main-class></jpackage-state>

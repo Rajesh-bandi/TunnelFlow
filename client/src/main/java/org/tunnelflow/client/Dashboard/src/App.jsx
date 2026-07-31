@@ -1,312 +1,155 @@
-import { useEffect, useState } from "react";
-import RequestLogs from "./components/RequestLogs";
+import { useEffect, useState, useCallback } from "react";
+import Sidebar from "./components/Sidebar";
+import ApplicationsView from "./components/ApplicationsView";
+import CreateAppWizard from "./components/CreateAppWizard";
+import PortTunnelsView from "./components/PortTunnelsView";
+import LogsView from "./components/LogsView";
+import AppSettingsModal from "./components/AppSettingsModal";
+
+const API_BASE = "http://localhost:4040";
+
 function App() {
-    const [status, setStatus] = useState(null);
-    const [port, setPort] = useState("");
-    const [tunnel, setTunnel] = useState(null);
-    const [tunnels, setTunnels] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [stoppingTunnelId, setStoppingTunnelId] = useState(null);
-    const [error, setError] = useState("");
+  const [activeView, setActiveView] = useState("apps");
+  const [status, setStatus] = useState(null);
+  const [apps, setApps] = useState([]);
+  const [tunnels, setTunnels] = useState([]);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [scrollY, setScrollY] = useState(0);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("tf-theme") || "dark";
+  });
 
-    // Fetch all currently active tunnels
-    const fetchTunnels = async () => {
-        try {
-            const response = await fetch(
-                "http://localhost:4040/api/tunnels"
-            );
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("tf-theme", theme);
+  }, [theme]);
 
-            if (!response.ok) {
-                throw new Error("Failed to load tunnels");
-            }
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }, []);
 
-            const data = await response.json();
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/status`);
+      if (res.ok) setStatus(await res.json());
+    } catch { /* offline */ }
+  }, []);
 
-            setTunnels(data);
+  const fetchApps = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/apps`);
+      if (res.ok) setApps(await res.json());
+    } catch { /* offline */ }
+  }, []);
 
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+  const fetchTunnels = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/tunnels`);
+      if (res.ok) setTunnels(await res.json());
+    } catch { /* offline */ }
+  }, []);
 
-    // Load TunnelFlow status and active tunnels
-    useEffect(() => {
+  useEffect(() => {
+    fetchStatus();
+    fetchApps();
+    fetchTunnels();
 
-        fetch("http://localhost:4040/api/status")
-            .then((response) => {
+    const interval = setInterval(() => {
+      fetchApps();
+      fetchTunnels();
+      fetchStatus();
+    }, 3000);
 
-                if (!response.ok) {
-                    throw new Error(
-                        "Unable to connect to TunnelFlow"
-                    );
-                }
+    return () => clearInterval(interval);
+  }, [fetchApps, fetchTunnels, fetchStatus]);
 
-                return response.json();
-            })
-            .then((data) => setStatus(data))
-            .catch(() =>
-                setError(
-                    "Unable to connect to TunnelFlow"
-                )
-            );
+  const navigateTo = useCallback((view) => {
+    setActiveView(view);
+    setScrollY(0);
+  }, []);
 
-        fetchTunnels();
+  const handleScroll = (e) => {
+    setScrollY(e.target.scrollTop);
+  };
 
-    }, []);
+  return (
+    <div className="app-layout">
+      {/* Parallax Background Layers */}
+      <div
+        className="parallax-bg-layer parallax-bg-orb1"
+        style={{ transform: `translate3d(0, ${scrollY * -0.15}px, 0)` }}
+      />
+      <div
+        className="parallax-bg-layer parallax-bg-orb2"
+        style={{ transform: `translate3d(0, ${scrollY * -0.28}px, 0)` }}
+      />
+      <div
+        className="parallax-bg-layer parallax-bg-grid"
+        style={{ transform: `translate3d(0, ${scrollY * -0.06}px, 0)` }}
+      />
 
-    // Create a new tunnel
-    const createTunnel = async () => {
+      <Sidebar
+        activeView={activeView}
+        setActiveView={navigateTo}
+        status={status}
+        appCount={apps.length}
+        tunnelCount={tunnels.length}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
 
-        setError("");
-        setTunnel(null);
-
-        const portNumber = Number(port);
-
-        if (
-            !portNumber ||
-            portNumber < 1 ||
-            portNumber > 65535
-        ) {
-            setError(
-                "Enter a valid port between 1 and 65535."
-            );
-            return;
-        }
-
-        try {
-
-            setLoading(true);
-
-            const response = await fetch(
-                "http://localhost:4040/api/tunnels",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-
-                    body: JSON.stringify({
-                        port: portNumber,
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    "Failed to create tunnel"
-                );
-            }
-
-            const data = await response.json();
-
-            setTunnel(data);
-
-            // Refresh active tunnels
-            await fetchTunnels();
-
-            // Clear port input
-            setPort("");
-
-        } catch (err) {
-
-            setError(err.message);
-
-        } finally {
-
-            setLoading(false);
-        }
-    };
-
-    // Stop an active tunnel
-    const stopTunnel = async (tunnelId) => {
-
-        setError("");
-
-        try {
-
-            setStoppingTunnelId(tunnelId);
-
-            const response = await fetch(
-                `http://localhost:4040/api/tunnels/${tunnelId}`,
-                {
-                    method: "DELETE",
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    "Failed to stop tunnel"
-                );
-            }
-
-            // If the tunnel shown in the
-            // "Tunnel Created" section was stopped,
-            // remove that section too.
-            if (tunnel?.tunnelId === tunnelId) {
-                setTunnel(null);
-            }
-
-            // Refresh active tunnels
-            await fetchTunnels();
-
-        } catch (err) {
-
-            setError(err.message);
-
-        } finally {
-
-            setStoppingTunnelId(null);
-        }
-    };
-
-    return (
-        <div>
-
-            <h1>TunnelFlow</h1>
-
-            {/* TunnelFlow Status */}
-
-            {status && (
-                <p>
-                    Status: {status.status}
-                    {" | "}
-                    Version: {status.version}
-                </p>
-            )}
-
-            <hr />
-
-            {/* Create Tunnel */}
-
-            <h2>Create Tunnel</h2>
-
-            <input
-                type="number"
-                placeholder="Enter local port"
-                value={port}
-                min="1"
-                max="65535"
-                onChange={(e) =>
-                    setPort(e.target.value)
-                }
+      <main className="main-content" onScroll={handleScroll}>
+        {activeView === "apps" && (
+          <div className="view-enter" key="apps">
+            <ApplicationsView
+              apps={apps}
+              fetchApps={fetchApps}
+              onOpenLogs={() => navigateTo("logs")}
+              onOpenSettings={(app) => setSelectedApp(app)}
+              onNavigateCreate={() => navigateTo("create")}
+              API_BASE={API_BASE}
             />
+          </div>
+        )}
 
-            <button
-                onClick={createTunnel}
-                disabled={loading}
-            >
-                {loading
-                    ? "Creating..."
-                    : "Create Tunnel"}
-            </button>
+        {activeView === "create" && (
+          <div className="view-enter" key="create">
+            <CreateAppWizard
+              onDeploySuccess={() => {
+                fetchApps();
+                navigateTo("apps");
+              }}
+              API_BASE={API_BASE}
+            />
+          </div>
+        )}
 
-            {/* Error */}
+        {activeView === "ports" && (
+          <div className="view-enter" key="ports">
+            <PortTunnelsView
+              tunnels={tunnels}
+              fetchTunnels={fetchTunnels}
+              API_BASE={API_BASE}
+            />
+          </div>
+        )}
 
-            {error && (
-                <p>
-                    ❌ {error}
-                </p>
-            )}
+        {activeView === "logs" && (
+          <div className="view-enter" key="logs">
+            <LogsView apps={apps} API_BASE={API_BASE} />
+          </div>
+        )}
+      </main>
 
-            {/* Newly Created Tunnel */}
-
-            {tunnel && (
-                <div>
-
-                    <h3>Tunnel Created</h3>
-
-                    <p>
-                        Tunnel ID: {tunnel.tunnelId}
-                    </p>
-
-                    <p>
-                        Local:{" "}
-                        http://localhost:{tunnel.localPort}
-                    </p>
-
-                    <p>
-                        Public:{" "}
-
-                        <a
-                            href={tunnel.publicUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            {tunnel.publicUrl}
-                        </a>
-                    </p>
-
-                </div>
-            )}
-
-            <hr />
-
-            {/* Active Tunnels */}
-
-            <h2>Active Tunnels</h2>
-
-            {tunnels.length === 0 ? (
-
-                <p>No active tunnels.</p>
-
-            ) : (
-
-                tunnels.map((item) => (
-
-                    <div key={item.tunnelId}>
-
-                        <h3>
-                            localhost:{item.localPort}
-                        </h3>
-
-                        <p>
-                            Tunnel ID: {item.tunnelId}
-                        </p>
-
-                        <p>
-                            Local URL:{" "}
-                            http://localhost:{item.localPort}
-                        </p>
-
-                        <p>
-                            Public URL:{" "}
-
-                            <a
-                                href={item.publicUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                {item.publicUrl}
-                            </a>
-                        </p>
-
-                        <button
-                            onClick={() =>
-                                stopTunnel(item.tunnelId)
-                            }
-                            disabled={
-                                stoppingTunnelId ===
-                                item.tunnelId
-                            }
-                        >
-                            {stoppingTunnelId ===
-                            item.tunnelId
-                                ? "Stopping..."
-                                : "Stop Tunnel"}
-                        </button>
-
-                        <hr />
-
-                        <RequestLogs />
-
-                    </div>
-
-                ))
-            )}
-
-        </div>
-    );
+      {selectedApp && (
+        <AppSettingsModal
+          app={selectedApp}
+          onClose={() => setSelectedApp(null)}
+        />
+      )}
+    </div>
+  );
 }
 
 export default App;

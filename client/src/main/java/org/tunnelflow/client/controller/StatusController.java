@@ -9,11 +9,11 @@ import java.util.Map;
 public class StatusController {
 
     @GetMapping
-    public Map<String, String> getStatus() {
-
+    public Map<String, Object> getStatus() {
         return Map.of(
                 "name", "TunnelFlow",
                 "status", "running",
+                "registered", true,
                 "version", "0.1.0"
         );
     }
