@@ -68,14 +68,14 @@ export default function App() {
             <ZapIcon size={20} color="#fff" />
           </div>
           <span className="brand-name">TunnelFlow</span>
-          <span className="glow-chip glow-chip-violet">v1.0.0 Release</span>
+          <span className="glow-chip glow-chip-violet">v1.0.0</span>
         </div>
 
         <nav className="landing-nav-links">
           <a href="#system-requirements">Requirements</a>
           <a href="#installation">Installation</a>
           <a href="#gui-features">Dashboard Guide</a>
-          <a href="#cli-reference">CLI Options</a>
+          <a href="#cli-reference">CLI Reference</a>
         </nav>
 
         <div style={{ display: "flex", gap: "0.65rem", alignItems: "center" }}>
@@ -102,17 +102,17 @@ export default function App() {
       <section className="landing-hero">
         <div className="landing-hero-badge">
           <SparklesIcon size={14} color="var(--brand-300)" />
-          <span>Next-Generation Secure Tunneling & Web Dashboard Platform</span>
+          <span>Simple & Secure Tunneling for Local Developers</span>
         </div>
 
         <h1 className="landing-hero-title">
-          Expose Local Ports & Orchestrate <br />
-          <span className="text-gradient-brand">Multi-Service Stacks</span> via Web UI.
+          Expose Local Apps & Run <br />
+          <span className="text-gradient-brand">Multi-Service Projects</span> Easily.
         </h1>
 
         <p className="landing-hero-subtitle">
-          Intuitive Web Dashboard for instant public SSL tunneling, visual multi-service application creation, 
-          live HTTP request header inspection, and interactive stack topology graph. Java runtime bundled.
+          Create public HTTPS URLs for your local apps in seconds. Share your work with teammates, 
+          test webhooks, and run frontend & backend services together from one clean web dashboard.
         </p>
 
         {/* Quick One-Line Install Command */}
@@ -128,10 +128,10 @@ export default function App() {
 
         <div className="hero-actions">
           <a href="/TunnelFlow-1.0.0.msi" download className="btn btn-primary" style={{ padding: "0.75rem 1.6rem", fontSize: "0.95rem" }}>
-            <DownloadIcon size={18} /> Install TunnelFlow v1.0.0 (MSI)
+            <DownloadIcon size={18} /> Download TunnelFlow v1.0.0 (MSI)
           </a>
           <a href="#gui-features" className="btn btn-secondary" style={{ padding: "0.75rem 1.6rem", fontSize: "0.95rem" }}>
-            <RocketIcon size={18} /> Explore Dashboard Guide
+            <RocketIcon size={18} /> See How It Works
           </a>
         </div>
 
@@ -141,12 +141,12 @@ export default function App() {
             <span className="dot dot-red" />
             <span className="dot dot-yellow" />
             <span className="dot dot-green" />
-            <span className="mockup-title">TunnelFlow Web Dashboard — Platform Homepage</span>
+            <span className="mockup-title">TunnelFlow Web Dashboard</span>
           </div>
           <div className="mockup-body">
             <MediaViewer
               src="/homepage.png"
-              alt="TunnelFlow Web Dashboard Main Homepage Interface"
+              alt="TunnelFlow Web Dashboard Overview"
             />
           </div>
         </div>
@@ -156,39 +156,39 @@ export default function App() {
       <section id="system-requirements" className="landing-section">
         <div className="section-header">
           <h2 className="section-title">System Requirements</h2>
-          <p className="section-subtitle">Everything needed before installing TunnelFlow on your system</p>
+          <p className="section-subtitle">Everything you need to run TunnelFlow on your computer</p>
         </div>
 
         <div className="req-grid">
           <div className="req-card">
             <div className="req-icon"><CheckCircle2Icon size={24} color="var(--emerald)" /></div>
             <div>
-              <h3>Windows 10 or Windows 11</h3>
-              <p>64-bit operating system support out-of-the-box.</p>
+              <h3>Windows 10 or 11</h3>
+              <p>Works on any 64-bit Windows operating system.</p>
             </div>
           </div>
 
           <div className="req-card">
             <div className="req-icon"><CheckCircle2Icon size={24} color="var(--emerald)" /></div>
             <div>
-              <h3>Administrator Privileges</h3>
-              <p>Required during MSI installation to configure system PATH environment variables.</p>
+              <h3>Administrator Access</h3>
+              <p>Needed during setup to add TunnelFlow to your command line.</p>
             </div>
           </div>
 
           <div className="req-card">
             <div className="req-icon"><CheckCircle2Icon size={24} color="var(--emerald)" /></div>
             <div>
-              <h3>Active Internet Connection</h3>
-              <p>For establishing secure WebSocket tunnels with TunnelFlow edge servers.</p>
+              <h3>Internet Connection</h3>
+              <p>Needed to connect your local app to secure public URLs.</p>
             </div>
           </div>
 
           <div className="req-card req-card-highlight">
             <div className="req-icon"><CheckCircle2Icon size={24} color="var(--brand-300)" /></div>
             <div>
-              <h3>Java Runtime Included</h3>
-              <p>Java is NOT required to be installed manually — bundled directly inside the installer!</p>
+              <h3>Java Bundled (No Setup)</h3>
+              <p>Java is included inside the installer — you don't need to install anything extra!</p>
             </div>
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function App() {
               <div className="step-details">
                 <h3>Step 1 — Download TunnelFlow</h3>
                 <p>
-                  Download the official Windows installer (<code>TunnelFlow-1.0.0.msi</code>) directly below or from GitHub Releases.
+                  Download the official Windows installer (<code>TunnelFlow-1.0.0.msi</code>) directly below:
                 </p>
                 <div className="step-actions" style={{ marginTop: "0.75rem", marginBottom: "1rem" }}>
                   <a
@@ -243,7 +243,7 @@ export default function App() {
               <div className="step-details">
                 <h3>Step 2 — Run the Setup Wizard</h3>
                 <p>
-                  Double-click the downloaded <code>TunnelFlow-1.0.0.msi</code> file. If Windows displays a User Account Control (UAC) prompt, click <strong>Yes</strong>. Follow the setup wizard and click <strong>Finish</strong> when complete.
+                  Double-click the downloaded <code>TunnelFlow-1.0.0.msi</code> file. If Windows asks for Administrator permission, click <strong>Yes</strong>. Follow the setup wizard steps and click <strong>Finish</strong>.
                 </p>
                 <div style={{ marginTop: "1rem" }}>
                   <MediaViewer
@@ -257,9 +257,9 @@ export default function App() {
             <div className="step-block">
               <div className="step-num">3</div>
               <div className="step-details">
-                <h3>Step 3 — Verify Installation in Terminal</h3>
+                <h3>Step 3 — Verify Installation</h3>
                 <p>
-                  Open Command Prompt or PowerShell and verify your setup:
+                  Open Command Prompt or PowerShell and type:
                 </p>
                 <div className="code-block" style={{ margin: "0.75rem 0 1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <code>{versionCmd}</code>
@@ -269,7 +269,7 @@ export default function App() {
                 </div>
                 <MediaViewer
                   src="/verifyInstallation.png"
-                  alt="Terminal Version Verification Output"
+                  alt="Terminal Version Output"
                 />
               </div>
             </div>
@@ -282,9 +282,9 @@ export default function App() {
             <div className="step-block">
               <div className="step-num">⚡</div>
               <div className="step-details">
-                <h3>One-Command Automated Installation</h3>
+                <h3>One-Command Automatic Installation</h3>
                 <p>
-                  Open <strong>PowerShell as Administrator</strong> and run:
+                  Open <strong>PowerShell as Administrator</strong> and run this single line:
                 </p>
                 <div className="code-block" style={{ margin: "0.85rem 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <code>{oneLineInstallCmd}</code>
@@ -293,9 +293,9 @@ export default function App() {
                   </button>
                 </div>
                 <div className="script-checklist">
-                  <div className="check-item"><CheckCircle2Icon size={16} color="var(--emerald)" /> Installs executable silently to Program Files</div>
-                  <div className="check-item"><CheckCircle2Icon size={16} color="var(--emerald)" /> Configures System PATH environment variables</div>
-                  <div className="check-item"><CheckCircle2Icon size={16} color="var(--emerald)" /> Automatically verifies installation</div>
+                  <div className="check-item"><CheckCircle2Icon size={16} color="var(--emerald)" /> Installs TunnelFlow silently to Program Files</div>
+                  <div className="check-item"><CheckCircle2Icon size={16} color="var(--emerald)" /> Automatically adds TunnelFlow to your PATH</div>
+                  <div className="check-item"><CheckCircle2Icon size={16} color="var(--emerald)" /> Verifies the installation automatically</div>
                 </div>
               </div>
             </div>
@@ -303,56 +303,54 @@ export default function App() {
         )}
       </section>
 
-      {/* ── DASHBOARD GUI USAGE GUIDE (WITH REAL MEDIA & CAROUSEL) ── */}
+      {/* ── DASHBOARD GUI USAGE GUIDE ── */}
       <section id="gui-features" className="landing-section">
         <div className="section-header">
           <h2 className="section-title">How to Use the Web Dashboard</h2>
-          <p className="section-subtitle">Complete step-by-step visual workflow guide for every feature in the Web UI</p>
+          <p className="section-subtitle">A simple visual walkthrough of everything you can do in the Dashboard</p>
         </div>
 
         <div className="features-container">
           {/* GUI Feature 1 */}
           <div className="feature-detail-card">
             <div className="feature-text">
-              <div className="feature-chip"><GlobeIcon size={14} /> GUI Guide 1</div>
-              <h3>Expose Any Local Port in 1-Click</h3>
+              <div className="feature-chip"><GlobeIcon size={14} /> Feature 1</div>
+              <h3>Expose Any Port Instantly</h3>
               <p>
-                Open the <strong>Port Tunnels</strong> tab in the sidebar. Enter your local port number 
-                (e.g., <code>5173</code> for Vite/React, <code>8080</code> for Spring Boot, <code>3000</code> for Next.js) 
+                Type your local port number (like <code>5173</code> for Vite/React, <code>8080</code> for Spring Boot, or <code>3000</code> for Next.js) 
                 and click <strong>Expose Port</strong>.
                 <br /><br />
-                TunnelFlow instantly generates a secure public SSL URL with one-click copy and direct link actions.
+                TunnelFlow instantly creates a public HTTPS URL with a 1-click copy button and browser link.
               </p>
             </div>
             <div className="feature-media">
               <MediaViewer
                 src="/exposeLocalPort.png"
-                alt="Expose Local Port Dashboard Form"
+                alt="Expose Local Port View"
               />
             </div>
           </div>
 
-          {/* GUI Feature 2: MULTI-IMAGE CAROUSEL! */}
+          {/* GUI Feature 2 */}
           <div className="feature-detail-card feature-reverse">
             <div className="feature-text">
-              <div className="feature-chip"><PlusCircleIcon size={14} /> GUI Guide 2</div>
-              <h3>Create Multi-Service App Stacks visually</h3>
+              <div className="feature-chip"><PlusCircleIcon size={14} /> Feature 2</div>
+              <h3>Launch Full-Stack Projects</h3>
               <p>
-                Click <strong>+ Create Application Stack</strong> to launch the step-by-step visual wizard:
+                Click <strong>+ Create Application Stack</strong> to run frontend and backend apps together:
                 <br /><br />
-                1. <strong>Stack Name & Frameworks</strong>: Name your app stack and select detected stack frameworks.<br />
-                2. <strong>Service Configuration</strong>: Add frontend & backend services, set ports, working directories, and dev commands.<br />
-                3. <strong>Launch</strong>: Run all microservice processes concurrently under a unified stack card.
+                1. <strong>Project Name</strong>: Enter a name (like <code>NotesApp</code>).<br />
+                2. <strong>Add Services</strong>: Add your frontend and backend apps with their port numbers and start commands.<br />
+                3. <strong>Launch</strong>: Click Launch to start all your services from one simple dashboard card.
               </p>
             </div>
             <div className="feature-media">
-              {/* Interactive Carousel for Application Stack Creation */}
               <CarouselViewer
                 items={[
                   { src: "/aaplicationStackCreation.png", alt: "Application Stack Creation Step 1" },
                   { src: "/aaplicationStackCreation2.png", alt: "Application Stack Creation Step 2" },
                 ]}
-                caption="Interactive Carousel: Step 1 & Step 2 of Application Stack Creation Wizard"
+                caption="Interactive Carousel: Step 1 & Step 2 of Application Creation Wizard"
               />
             </div>
           </div>
@@ -360,14 +358,12 @@ export default function App() {
           {/* GUI Feature 3 */}
           <div className="feature-detail-card">
             <div className="feature-text">
-              <div className="feature-chip"><SlidersIcon size={14} /> GUI Guide 3</div>
-              <h3>Automatic Cross-Service Env Variable Injection</h3>
+              <div className="feature-chip"><SlidersIcon size={14} /> Feature 3</div>
+              <h3>Automatic URL Sharing</h3>
               <p>
-                In the Application Wizard, set environment variables with placeholders like 
-                <code>VITE_API_URL=${`\${backend.publicUrl}`}</code>.
+                Need your frontend to know your backend's public URL? Simply put <code>VITE_API_URL=${`\${backend.publicUrl}`}</code> in your environment variables.
                 <br /><br />
-                TunnelFlow automatically resolves live public SSL URLs at runtime and injects them into service process environments. 
-                Click <strong>Preview Envs</strong> on any application card to inspect resolved values.
+                TunnelFlow automatically fills in the live public URL so your services connect seamlessly. Click <strong>Preview Envs</strong> to see it in action.
               </p>
             </div>
             <div className="feature-media">
@@ -378,44 +374,42 @@ export default function App() {
             </div>
           </div>
 
-          {/* GUI Feature 4: REAL MP4 VIDEO PLAYER! */}
+          {/* GUI Feature 4 */}
           <div className="feature-detail-card feature-reverse">
             <div className="feature-text">
-              <div className="feature-chip"><ActivityIcon size={14} /> GUI Guide 4</div>
-              <h3>Inspect Live HTTP Requests & Traffic Stream</h3>
+              <div className="feature-chip"><ActivityIcon size={14} /> Feature 4</div>
+              <h3>Live Request Traffic</h3>
               <p>
-                Navigate to the <strong>Traffic & Logs</strong> view to monitor incoming tunneled requests in real-time.
+                Open <strong>Traffic & Logs</strong> to see every HTTP request arriving at your app in real-time.
                 <br /><br />
-                Click on any request line item to open the <strong>Request Detail Inspector</strong> modal. 
-                Inspect HTTP methods, full URL paths, status codes, latency timings, client IP routes, request headers, and response headers.
+                Click any request line to open the <strong>Request Details</strong> window and view HTTP headers, status codes, and response times.
               </p>
             </div>
             <div className="feature-media">
               <MediaViewer
                 src="/live_request_traffic.mp4"
                 isVideo={true}
-                caption="🎬 Video Demo: Live Traffic Stream & HTTP Request Header Inspector"
+                caption="🎬 Video Demo: Live Request Traffic Stream & Header Inspector"
               />
             </div>
           </div>
 
-          {/* GUI Feature 5: REAL MP4 VIDEO PLAYER! */}
+          {/* GUI Feature 5 */}
           <div className="feature-detail-card">
             <div className="feature-text">
-              <div className="feature-chip"><TopologyIcon size={14} /> GUI Guide 5</div>
-              <h3>Interactive Stack Topology Graph & Request Particles</h3>
+              <div className="feature-chip"><TopologyIcon size={14} /> Feature 5</div>
+              <h3>Visual Stack Topology</h3>
               <p>
-                Click <strong>Stack Topology</strong> on any application card to open an interactive visual canvas.
+                Click <strong>Stack Topology</strong> on any application to view a live visual map.
                 <br /><br />
-                When a request arrives, moving particle dots travel down the exact wire leading to the target service node with border hit flashes. 
-                Click any particle dot or recent request entry to open a floating header inspection popover.
+                Watch moving dots travel down the wires to your services as requests arrive. Click any moving dot to inspect request headers on the fly.
               </p>
             </div>
             <div className="feature-media">
               <MediaViewer
                 src="/graph_topolozy.mp4"
                 isVideo={true}
-                caption="🎬 Video Demo: Interactive Stack Topology Graph & Live Request Particle Routing"
+                caption="🎬 Video Demo: Visual Stack Topology & Traffic Particle Flow"
               />
             </div>
           </div>
@@ -423,18 +417,18 @@ export default function App() {
           {/* GUI Feature 6 */}
           <div className="feature-detail-card feature-reverse">
             <div className="feature-text">
-              <div className="feature-chip"><TerminalIcon size={14} /> GUI Guide 6</div>
-              <h3>Stream Live Console Logs per Microservice</h3>
+              <div className="feature-chip"><TerminalIcon size={14} /> Feature 6</div>
+              <h3>Watch Live Application Logs</h3>
               <p>
-                Click <strong>Console Logs</strong> on any managed application stack to open the live process logs drawer.
+                Click <strong>Console Logs</strong> on any app card to open the log drawer.
                 <br /><br />
-                View stdout and stderr logs from all running microservices simultaneously, filter log lines, and clear terminal outputs.
+                See terminal output from all your running services in one organized place without juggling terminal windows.
               </p>
             </div>
             <div className="feature-media">
               <MediaViewer
                 src="/each_application_console_logs.png"
-                alt="Each Application Console Logs View"
+                alt="Console Logs View"
               />
             </div>
           </div>
@@ -442,12 +436,12 @@ export default function App() {
           {/* GUI Feature 7 */}
           <div className="feature-detail-card">
             <div className="feature-text">
-              <div className="feature-chip"><QrCodeIcon size={14} /> GUI Guide 7</div>
-              <h3>1-Click Mobile Testing via QR Code Sharing</h3>
+              <div className="feature-chip"><QrCodeIcon size={14} /> Feature 7</div>
+              <h3>Instant QR Code Sharing</h3>
               <p>
-                Click <strong>Share QR</strong> on any exposed port or application service.
+                Click <strong>Share QR</strong> on any exposed port or service.
                 <br /><br />
-                Scan the high-contrast QR code tile using your mobile phone camera or tablet to test your local web app live over 4G/5G/Wi-Fi.
+                Scan the QR code with your phone or tablet camera to test your local app on real mobile devices over 4G or Wi-Fi.
               </p>
             </div>
             <div className="feature-media">
@@ -460,11 +454,11 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── CLI OPTIONS (EXTRA / SECONDARY) ── */}
+      {/* ── CLI OPTIONS ── */}
       <section id="cli-reference" className="landing-section">
         <div className="section-header">
           <h2 className="section-title">CLI Quick Reference</h2>
-          <p className="section-subtitle">Basic command line tools for starting the engine and exposing ports</p>
+          <p className="section-subtitle">Simple command line options for quick usage</p>
         </div>
 
         <div className="card">
@@ -473,23 +467,23 @@ export default function App() {
               <tr>
                 <th>Command</th>
                 <th>Description</th>
-                <th>Example Usage</th>
+                <th>Example</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td><code>tunnelflow start</code></td>
-                <td>Start the local dashboard engine & WebSocket connection</td>
-                <td><code>tunnelflow start</code> or <code>tunnelflow start --debug</code></td>
+                <td>Start the local dashboard engine</td>
+                <td><code>tunnelflow start</code></td>
               </tr>
               <tr>
                 <td><code>tunnelflow expose &lt;port&gt;</code></td>
-                <td>Expose a single local TCP port to a public SSL URL</td>
+                <td>Expose a single local port to a public HTTPS URL</td>
                 <td><code>tunnelflow expose 5173</code></td>
               </tr>
               <tr>
                 <td><code>tunnelflow version</code></td>
-                <td>Display CLI version, Java runtime, and system architecture</td>
+                <td>Display version information</td>
                 <td><code>tunnelflow version</code></td>
               </tr>
             </tbody>
@@ -504,10 +498,10 @@ export default function App() {
             <div className="brand-logo">
               <ZapIcon size={16} color="#fff" />
             </div>
-            <span className="brand-name">TunnelFlow Platform</span>
+            <span className="brand-name">TunnelFlow</span>
           </div>
           <p className="footer-tagline">
-            Secure tunneling, local port exposure, and multi-service microservice orchestration for modern developers.
+            Simple, secure tunneling and local development platform.
           </p>
           <div className="footer-links">
             <a href="https://github.com/Rajesh-bandi/TunnelFlow" target="_blank" rel="noreferrer">
@@ -518,7 +512,7 @@ export default function App() {
             <a href="#gui-features">Dashboard Guide</a>
           </div>
           <div className="footer-copy">
-            © 2026 TunnelFlow. Open Source Developer Platform.
+            © 2026 TunnelFlow. Open Source Software.
           </div>
         </div>
       </footer>
