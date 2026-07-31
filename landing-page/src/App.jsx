@@ -60,15 +60,15 @@ export default function App() {
       {/* ── PARALLAX BACKGROUND LAYERS ── */}
       <div
         className="parallax-bg-layer parallax-bg-orb1"
-        style={{ transform: `translate3d(0, ${scrollY * -0.16}px, 0)` }}
+        style={{ transform: `translate3d(0, ${Math.max(-180, scrollY * -0.04)}px, 0)` }}
       />
       <div
         className="parallax-bg-layer parallax-bg-orb2"
-        style={{ transform: `translate3d(0, ${scrollY * -0.28}px, 0)` }}
+        style={{ transform: `translate3d(0, ${Math.max(-220, scrollY * -0.06)}px, 0)` }}
       />
       <div
         className="parallax-bg-layer parallax-bg-grid"
-        style={{ transform: `translate3d(0, ${scrollY * -0.06}px, 0)` }}
+        style={{ transform: `translate3d(0, ${Math.max(-100, scrollY * -0.02)}px, 0)` }}
       />
 
       {/* ── LANDING NAVBAR ── */}

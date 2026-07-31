@@ -135,7 +135,10 @@ html, body, #root {
 
 .parallax-bg-layer {
   position: fixed;
-  inset: -120px;
+  top: -300px;
+  left: -200px;
+  right: -200px;
+  bottom: -300px;
   pointer-events: none;
   z-index: 0;
   will-change: transform;
@@ -143,43 +146,31 @@ html, body, #root {
 }
 
 [data-theme="dark"] .parallax-bg-orb1 {
-  background: radial-gradient(
-    circle 650px at 75% 20%,
-    rgba(124, 58, 237, 0.16) 0%,
-    rgba(99, 102, 241, 0.08) 50%,
-    transparent 80%
-  );
+  background: 
+    radial-gradient(circle 850px at 75% 15%, rgba(124, 58, 237, 0.18) 0%, rgba(99, 102, 241, 0.07) 50%, transparent 80%),
+    radial-gradient(circle 750px at 20% 60%, rgba(34, 211, 238, 0.10) 0%, rgba(124, 58, 237, 0.05) 50%, transparent 80%);
 }
 
 [data-theme="light"] .parallax-bg-orb1 {
-  background: radial-gradient(
-    circle 650px at 75% 20%,
-    rgba(124, 58, 237, 0.06) 0%,
-    rgba(99, 102, 241, 0.03) 50%,
-    transparent 80%
-  );
+  background: 
+    radial-gradient(circle 850px at 75% 15%, rgba(124, 58, 237, 0.07) 0%, rgba(99, 102, 241, 0.03) 50%, transparent 80%),
+    radial-gradient(circle 750px at 20% 60%, rgba(99, 102, 241, 0.05) 0%, transparent 80%);
 }
 
 [data-theme="dark"] .parallax-bg-orb2 {
-  background: radial-gradient(
-    circle 550px at 20% 85%,
-    rgba(34, 211, 238, 0.08) 0%,
-    rgba(124, 58, 237, 0.06) 50%,
-    transparent 75%
-  );
+  background: 
+    radial-gradient(circle 950px at 50% 88%, rgba(124, 58, 237, 0.15) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 85%),
+    radial-gradient(circle 650px at 85% 45%, rgba(16, 185, 129, 0.06) 0%, transparent 75%);
 }
 
 [data-theme="light"] .parallax-bg-orb2 {
-  background: radial-gradient(
-    circle 550px at 20% 85%,
-    rgba(99, 102, 241, 0.05) 0%,
-    rgba(14, 165, 233, 0.03) 50%,
-    transparent 75%
-  );
+  background: 
+    radial-gradient(circle 950px at 50% 88%, rgba(124, 58, 237, 0.05) 0%, rgba(99, 102, 241, 0.03) 50%, transparent 85%),
+    radial-gradient(circle 650px at 85% 45%, rgba(5, 150, 105, 0.04) 0%, transparent 75%);
 }
 
 [data-theme="dark"] .parallax-bg-grid {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
