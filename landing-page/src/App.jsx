@@ -92,7 +92,7 @@ export default function App() {
             GitHub Repository <ExternalLinkIcon size={12} />
           </a>
 
-          <a href="/TunnelFlow-1.0.0.msi" download className="btn btn-primary btn-sm">
+          <a href="https://github.com/Rajesh-bandi/TunnelFlow/releases" download className="btn btn-primary btn-sm">
             <DownloadIcon size={14} /> Download MSI
           </a>
         </div>
@@ -127,7 +127,7 @@ export default function App() {
         </div>
 
         <div className="hero-actions">
-          <a href="/TunnelFlow-1.0.0.msi" download className="btn btn-primary" style={{ padding: "0.75rem 1.6rem", fontSize: "0.95rem" }}>
+          <a href="https://github.com/Rajesh-bandi/TunnelFlow/releases" download className="btn btn-primary" style={{ padding: "0.75rem 1.6rem", fontSize: "0.95rem" }}>
             <DownloadIcon size={18} /> Download TunnelFlow v1.0.0 (MSI)
           </a>
           <a href="#gui-features" className="btn btn-secondary" style={{ padding: "0.75rem 1.6rem", fontSize: "0.95rem" }}>
@@ -228,7 +228,7 @@ export default function App() {
                 </p>
                 <div className="step-actions" style={{ marginTop: "0.75rem", marginBottom: "1rem" }}>
                   <a
-                    href="/TunnelFlow-1.0.0.msi"
+                    href="https://github.com/Rajesh-bandi/TunnelFlow/releases"
                     download
                     className="btn btn-primary btn-sm"
                   >
