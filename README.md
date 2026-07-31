@@ -57,6 +57,24 @@ TunnelFlow makes these tasks simple by providing secure public URLs, managing mu
 
 ## ⚙️ How It Works
 
+TunnelFlow safely proxies traffic between external users and your local computer:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 🌐 External User / Webhook
+    participant Server as ☁️ TunnelFlow Server
+    participant Client as 💻 TunnelFlow Client
+    participant App as ⚡ Local App (localhost)
+
+    User->>Server: 1. Request public HTTPS URL
+    Server->>Client: 2. Forward request through secure WebSocket
+    Client->>App: 3. Send request to local port
+    App-->>Client: 4. Process & return response
+    Client-->>Server: 5. Stream response back
+    Server-->>User: 6. Deliver SSL response to user
+```
+
 1. **Connection**: TunnelFlow connects your computer to the TunnelFlow server through a secure WebSocket connection.
 2. **URL Generation**: When you expose a local port, TunnelFlow creates a public HTTPS URL.
 3. **Traffic Forwarding**: Incoming requests to your public URL are forwarded through the secure connection to your local application.
@@ -67,7 +85,15 @@ TunnelFlow makes these tasks simple by providing secure public URLs, managing mu
 
 ## 🏗️ Architecture
 
-TunnelFlow consists of three main components:
+TunnelFlow consists of three main components working together:
+
+```mermaid
+graph TD
+    User[🌐 External User / Webhook] -->|1. Public HTTPS Request| Server[☁️ TunnelFlow Server]
+    Server <-->|2. Secure WebSocket Tunnel| Client[💻 TunnelFlow Client]
+    Client <-->|3. Local Traffic| Apps[⚡ Local Apps - React / Spring / Express]
+    Client <-->|4. Controls & Logs| Dashboard[🎨 Web Dashboard]
+```
 
 - **Client** – Runs on your computer and forwards traffic to your local applications.
 - **Dashboard** – A clean web interface for managing tunnels, viewing logs, and monitoring requests.
